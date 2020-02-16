@@ -3,6 +3,8 @@ title: Dark Honya -- nullcon HackIM 2020
 categories: [CTF Writeups]
 tags: [nullcon20, pwn]
 date: 2020-02-09
+seo:
+  date_modified: 2020-02-16 17:21:40 +0000
 ---
 With [Jorge](https://twitter.com/jorge_cmartins) and [jofra](https://twitter.com/V_jofra)
 
