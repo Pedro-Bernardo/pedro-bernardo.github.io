@@ -4,7 +4,7 @@ categories: [CTF Writeups]
 tags: [nullcon20, pwn]
 date: 2020-02-09
 seo:
-  date_modified: 2020-02-16 17:21:40 +0000
+  date_modified: 2020-02-16 19:50:45 +0000
 ---
 With [Jorge](https://twitter.com/jorge_cmartins) and [jofra](https://twitter.com/V_jofra)
 
