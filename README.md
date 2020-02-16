@@ -124,7 +124,7 @@ Basically, go to `_config.yml` and customize the variables as needed, some of th
 
 * Avatar
     
-    `avatar` defines the source image location. The sample image is `/assets/img/sample/avatar.jpg`. It should be replaced by your own one. Notice that a huge image file will increase the load time of your site, so keep your avatar size as samll as possible(may be *<https://tinypng.com/>* will help).
+    `avatar` defines the source image location. The sample image is `/assets/img/sample/avatar.png`. It should be replaced by your own one. Notice that a huge image file will increase the load time of your site, so keep your avatar size as samll as possible(may be *<https://tinypng.com/>* will help).
 
 * TimeZone
 

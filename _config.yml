@@ -8,9 +8,9 @@
 # jekyll-seo-tag settings › https://github.com/jekyll/jekyll-seo-tag/blob/master/docs/usage.md
 #--------------------------
 
-title: Chirpy                          # the main title
+title: Pedro Bernardo                           # the main title
 
-tagline: A text-focused Jekyll theme.  # it will display as the sub-title
+tagline: Computer Science MsC student. CyberSec enthusiast and CTF player.  # it will display as the sub-title
 
 description: >-                        # used by seo meta and the atom feed
   A minimal, portfolio, sidebar, bootstrap Jekyll theme with responsive web design and focuses on text presentation.
@@ -19,9 +19,9 @@ description: >-                        # used by seo meta and the atom feed
 # url: 'protocol://domain'
 url: https://pedro-bernardo.github.io
 
-author: your_full_name                  # change to your full name
+author: Pedro Bernardo                  # change to your full name
 
-avatar: /assets/img/sample/avatar.jpg   # support internet resources
+avatar: /assets/img/sample/avatar.png   # support internet resources
 
 github:
   username: pedro-bernardo             # change to your github username

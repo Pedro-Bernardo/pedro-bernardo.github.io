@@ -1,5 +1,5 @@
 ---
-title: Categories
+title: Work
 
 # All the Categories of posts
 # v2.0

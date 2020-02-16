@@ -1,12 +1,11 @@
 ---
 title: Dark Honya -- nullcon HackIM 2020
-categories: [Blogging, Tutorial]
+categories: [CTF Writeups]
 tags: [nullcon20, pwn]
 date: 2020-02-09
-# authors: ["pedro-bernardo", "Jorge", "jofra"]
 ---
+With [Jorge](https://twitter.com/jorge_cmartins) and [jofra](https://twitter.com/V_jofra)
 
-# Dark Honya -- nullcon HackIM 2020
 **Points:** 460 (dynamic)
 
 ## TL;DR

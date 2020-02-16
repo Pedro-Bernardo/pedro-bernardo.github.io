@@ -25,6 +25,11 @@ layout: default
             <a href='{{ site.baseurl }}/categories/{{ category | replace: ' ', '-' | downcase | url_encode }}/'>{{ category }}</a>
             {%- unless forloop.last -%}, {%- endunless -%}
           {% endfor %}
+          {% if page.authors.size > 0 %}with {% endif %}
+          {% for author in page.authors %}
+            <a href='{{ site.baseurl }}/categories/{{ category | replace: ' ', '-' | downcase | url_encode }}/'>{{ category }}</a>
+            {%- unless forloop.last -%}, {%- endunless -%}
+          {% endfor %}
         </div>
 
         <!-- lastmod -->

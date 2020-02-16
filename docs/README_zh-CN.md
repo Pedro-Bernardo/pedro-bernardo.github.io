@@ -123,7 +123,7 @@ jekyll-theme-chirpy/
 
 * 头像
     
-    示例的头像文件放置在：`/assets/img/sample/avatar.jpg`. 把它换成你自己的头像，路径不限定，越小越好。(压缩图像体积可上这个网站：*<https://tinypng.com/>* ).
+    示例的头像文件放置在：`/assets/img/sample/avatar.png`. 把它换成你自己的头像，路径不限定，越小越好。(压缩图像体积可上这个网站：*<https://tinypng.com/>* ).
 
 * 时区
 
