@@ -168,20 +168,22 @@ q = cursor.execute("SELECT pass FROM users WHERE user='%s'" % uname)
 
 The config file provides the vulnerability patterns:
 ```json
-SQL injection
-get,get_object_or_404, QueryDict, ContactMailForm, ChatMessageForm
-mogrify, escape_string
-execute
+[
+  {"vulnerability": "SQL injection",
+  "sources": ["get", "get_object_or_404", "QueryDict", "ContactMailForm", "ChatMessageForm"],
+  "sanitizers": ["mogrify", "escape_string"],
+  "sinks": ["execute"]},
 
-SQL injection
-QueryDict, ContactMailForm, ChatMessageForm, copy, get_query_string, get_user_or_404, User
-mogrify, escape_string
-raw,RawSQL
+  {"vulnerability":"SQL injection",
+  "sources":["QueryDict", "ContactMailForm", "ChatMessageForm", "copy", "get_query_string"],
+  "sanitizers":["mogrify", "escape_string"],
+  "sinks":["raw", "RawSQL"]},
 
-XSS
-get, get_object_or_404, QueryDict, ContactMailForm, ChatMessageForm
-clean,escape,flatatt,render_template,render,render_to_response
-send_mail_jinja,mark_safe,Response,Markup,send_mail_jinja,Raw,HTMLString
+  {"vulnerability":"XSS",
+  "sources":["get", "get_object_or_404", "QueryDict", "ContactMailForm", "ChatMessageForm"],
+  "sanitizers":["clean","escape","flatatt","render_template","render","render_to_response"],
+  "sinks":["send_mail_jinja","mark_safe","Response","Markup","send_mail_jinja","Raw"]}
+]
 ``` 
 
 # Output
