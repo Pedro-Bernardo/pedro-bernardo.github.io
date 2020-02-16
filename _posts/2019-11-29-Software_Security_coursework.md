@@ -5,7 +5,7 @@ tags: [taint analysis]
 date: 2019-11-29
 ---
 
-> **Tools:** Python
+> **Tools:** Python  
 > [source code](https://github.com/Pedro-Bernardo/Software-Security-19-20-Taint-Analysis)
 
 This tool analyses python code slices and reports on illegal information flows by performing **Taint Analysis**, a form of **Static Analysis**.
