@@ -5,9 +5,9 @@ date: 2021-09-13
 authors: ["pedro-bernardo"]
 ---
 
-**Points:** 100
+**Points:** 484 (dynamic)
 
-**Solves:** 261
+**Solves:** 53
 
 **Description:**
 
