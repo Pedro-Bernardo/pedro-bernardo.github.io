@@ -5,10 +5,12 @@ date: 2021-09-13
 authors: ["pedro-bernardo"]
 ---
 
-# ncore Writeup -- PlaidCTF 2019
-**Points:** 484 (dynamic)
-**Solves:** 53
+**Points:** 100
+
+**Solves:** 261
+
 **Description:**
+
 > We have a very safe core with a very safe enclave
 
 ## Problem:
