@@ -98,25 +98,25 @@ content: 0000DDR1R2------
 
 #### MOVF (opcode 5)
 
-``` ; pc += 2;
-regfile[DD] = ram[RAM_ADDR]
+``` 
+regfile[DD] = ram[RAM_ADDR] ; pc += 2;
 idx:     0123456701234567
 content: 0101DD--RAM_ADDR
 ```
 
 #### MOVFS (opcode 13)
 - Only in emode
- ; pc += 2;
+ 
 ``` 
-regfile[DD] = safe_rom[RAM_ADDR]
+regfile[DD] = safe_rom[RAM_ADDR] ; pc += 2;
 idx:     0123456701234567
 content: 1101DD--FLAGADDR
 ```
 
 #### MOVT (opcode 6)
 
-``` ; pc += 2;
-ram[RAM_ADDR] = regfile[DD][0:7]
+``` 
+ram[RAM_ADDR] = regfile[DD][0:7] ; pc += 2;
 idx:     0123456701234567
 content: 0110DD--RAM_ADDR
 ```
