@@ -25,11 +25,11 @@ iverilog -g2009 -o nco ncore_tb.v
 The `-g2009` flag informs the compiler of the language generation to support, being `SystemVerilog` supported since `g2009`.
 
 ### Verilog VM
-We are also given the file `ncore_tb.v` which contains the `Verilog` source code.
+We are also given the file `ncore_tb.v` containing the `Verilog` source code.
 
-Reading through the code we can see that it implements a sort of VM that runs commands stored in its ram, which is provided by the user.
+Reading through the code we can see that it implements a sort of VM that runs commands stored in its ram, which the user provides.
 
-The VM's structures are te following:
+The VM's structures are the following:
 ``` 
 safe_rom - 256 byte array 
 ram      - 256 byte array
@@ -62,7 +62,7 @@ initial
 - `print_res` - print the last 64 bytes of `ram`
 
 ### Instructions
-The main loop of the VM is parsing the user provided `ram` for instructions.
+The main loop of the VM is parsing the user-provided `ram` for instructions.
 
 The instructions are 2 bytes long and the opcode is always the first 4 bits.
 
@@ -160,7 +160,7 @@ content: 1000--------
 
 
 - We cannot access the `safe_rom` where the flag is stored unless `emode = 1`
-- `emode` is set to 1 if regfile[0] containts the first 14 bits of secret key obtainted from `/dev/urandom`.
+- `emode` is set to 1 if regfile[0] contains the first 14 bits of secret key obtained from `/dev/urandom`.
 
 
 The plan:
@@ -213,7 +213,7 @@ def go():
 
 go()
 ```
-Running the script the server outputs the following:
+Running the script, the server outputs the following:
 ``` 
 ENT
 66 6c 61 67 7b 64 30 6e 54 5f 6d 45 53 73 5f 77 69 54 68 5f 74 48 65 5f 73 43 68 4c 41 6d 69 7d 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
