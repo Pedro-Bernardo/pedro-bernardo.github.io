@@ -5,11 +5,9 @@ date: 2021-09-13
 authors: ["pedro-bernardo"]
 ---
 
-**Points:** 484 (dynamic)
-
-**Solves:** 53
-
-**Description:**
+**Points:** 484 (dynamic)  
+**Solves:** 53  
+**Description:**  
 
 > We have a very safe core with a very safe enclave
 
@@ -68,12 +66,6 @@ The main loop of the VM is parsing the user provided `ram` for instructions.
 
 The instructions are 2 bytes long and the opcode is always the first 4 bits.
 
-<!--|0|1|2|3|4|5|6|7|0|1|2|3|4|5|6|7
-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-
-|O|O|O|O|X|X|X|X|X|X|X|X|X|X|X|X
--->
-
-
 These instructions can be used:
 #### ADD (opcode 0)
 ```
@@ -91,7 +83,7 @@ content: 1100DD----------
 
 #### SUB  (opcode 1)
 ```
-regfile[DD] = regfile[R1] - reg[R2]  ; pc += 2;
+regfile[DD] = regfile[R1] - regfile[R2]  ; pc += 2;
 idx:     0123456701234567
 content: 0000DDR1R2------
 ``` 
@@ -106,9 +98,8 @@ content: 0101DD--RAM_ADDR
 
 #### MOVFS (opcode 13)
 - Only in emode
- 
 ``` 
-regfile[DD] = safe_rom[RAM_ADDR] ; pc += 2;
+regfile[DD] = safe_rom[FLAGADDR] ; pc += 2;
 idx:     0123456701234567
 content: 1101DD--FLAGADDR
 ```
@@ -126,7 +117,6 @@ content: 0110DD--RAM_ADDR
 pc = regfile[r1] > regfile[r2] ? RAM_ADDR : pc+2 
 idx:     0123456701234567
 content: 1001R1R2RAM_ADDR
-
 ```
 
 #### JEQ (opcode 10)
@@ -138,14 +128,14 @@ content: 1010R1R2RAM_ADDR
 
 #### JMP (opcode 11)
 ```
-pc = ram[RAM_ADDr] ; 
+pc = ram[RAM_ADDR] ; 
 idx:     0123456701234567
 content: 1011----RAM_ADDR
 ```
 
 #### ENT (opcode 7)
 ```
-if key[0:13] == regfile[0]: ; 
+if key[0:13] == regfile[0]:
     emode = 1
     regfile[3] = 0
 else:
@@ -155,7 +145,6 @@ pc += 2;
 
 idx:     0123456701234567
 content: 0111------------
-
 ```
 
 #### EXT (opcode 8)
@@ -165,7 +154,6 @@ emode = 0 ; pc += 2
 
 idx:     0123456701234567
 content: 1000--------
-
 ```
 
 ### Extracting the Flag
@@ -185,6 +173,10 @@ The plan:
 ## The Solution
 
 ``` python
+def code_at(ram, addr, code):
+    ram[addr]   = p8(code[0])
+    ram[addr+1] = p8(code[1])
+    
 def go():
     s = remote(HOST, PORT)
     
@@ -220,7 +212,6 @@ def go():
     s.interactive()
 
 go()
-
 ```
 Running the script the server outputs the following:
 ``` 
