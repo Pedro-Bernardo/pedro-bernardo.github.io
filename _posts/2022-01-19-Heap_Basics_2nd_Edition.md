@@ -1,11 +1,11 @@
 ---
-title: Heap Basics Lecture (v2)
+title: Heap Basics Lecture - 2022
 categories: [Lectures]
 tags: [pwn, heap]
 date: 2022-01-19
 ---
 
-Second rendition of the *Glibc's Heap basics and how to exploit it* lecture.
+Second rendition of the [Glibc's Heap Basics and How to Exploit it](https://pedro-bernardo.github.io/posts/Heap_Exploitation_Lecture/)* lecture.
 
 We covered the following topics:
 - Chunks and chunk implementation
