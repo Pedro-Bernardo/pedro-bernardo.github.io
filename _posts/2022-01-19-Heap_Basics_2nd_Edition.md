@@ -5,7 +5,7 @@ tags: [pwn, heap]
 date: 2022-01-19
 ---
 
-Second rendition of the [Glibc's Heap Basics and How to Exploit it](https://pedro-bernardo.github.io/posts/Heap_Exploitation_Lecture/)* lecture.
+The second rendition of the [Glibc's Heap Basics and How to Exploit it](https://pedro-bernardo.github.io/posts/Heap_Exploitation_Lecture/)* lecture.
 
 We covered the following topics:
 - Chunks and chunk implementation
@@ -13,7 +13,7 @@ We covered the following topics:
 - Main arena and Bins
 - Tcache
 - Common attacks
-- Exploit development walktgrough
+- Exploit development walkthrough
 
 
 ## Demo
@@ -27,8 +27,8 @@ Download the binary and libc here: [gradebook](https://ctf.k3rn3l4rmy.com/kernel
 2. Allocate a padding chunk so the previous large chunk isn't merged with the wilderness
 3. Free all chunks
 4. Allocate a large chunk (will re-use the last large chunk) and overwrite the first 8 bytes only
-5. Leak backwards pointer through the binary's `list` functionality
-6. Create students and names of different sizes to lign up a Tcache entry immediately after our large chunk
+5. Leak backward pointer through the binary's `list` functionality
+6. Create students and names of different sizes to get a Tcache entry immediately after our large chunk
 7. Use the overflow bug in the binary to poison the tcache
 8. Allocate a chunk in the `__free_hook` and assign it to `system`
 9. Free a chunk containing the string `/bin/sh\x00`
