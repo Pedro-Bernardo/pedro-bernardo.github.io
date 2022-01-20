@@ -2,7 +2,7 @@
 title: Heap Basics Lecture (v2)
 categories: [Lectures]
 tags: [pwn, heap]
-date: 2021-01-19
+date: 2022-01-19
 ---
 
 Second rendition of the *Glibc's Heap basics and how to exploit it* lecture.
