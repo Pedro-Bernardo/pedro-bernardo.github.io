@@ -18,7 +18,7 @@ We covered the following topics:
 
 ## Demo
 
-We solved *gradebook* from the [K3RN3L CTF 2021](https://ctf.k3rn3l4rmy.com/Challenges) via a Tcache Poison attack (unintended solution). This solution walks through obtaining libc leaks and how to forge heap layouts favorable for using the Tcache Poison technique and obtain code execution. 
+We solved *gradebook* from the [K3RN3L CTF 2021](https://ctf.k3rn3l4rmy.com/Challenges) via a Tcache Poison attack (unintended solution). This solution walks through obtaining libc leaks and how to forge heap layouts favorable for using the Tcache Poison technique to obtain code execution. 
 
 Download the binary and libc here: [gradebook](https://ctf.k3rn3l4rmy.com/kernelctf-distribution-challs/gradebook/gradebook), [libc.so.6](https://ctf.k3rn3l4rmy.com/kernelctf-distribution-challs/gradebook/libc.so.6)
 
