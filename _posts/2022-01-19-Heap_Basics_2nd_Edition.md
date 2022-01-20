@@ -25,12 +25,14 @@ Download the binary and libc here: [gradebook](https://ctf.k3rn3l4rmy.com/kernel
 ### Solution Summary
 1. Allocate a large chunk (0x1000 bytes) 
 2. Allocate a padding chunk so the previous large chunk isn't merged with the wilderness
-3. Leak backwards pointer through the binary's `list` functionality
-4. Create students and names of different sizes to lign up a Tcache entry immediately after our large chunk
-5. Use the overflow bug in the binary to poison the tcache
-6. Allocate a chunk in the `__free_hook` and assign it to `system`
-7. Free a chunk containing the string `/bin/sh\x00`
-8. Win
+3. Free all chunks
+4. Allocate a large chunk (will re-use the last large chunk) and overwrite the first 8 bytes only
+5. Leak backwards pointer through the binary's `list` functionality
+6. Create students and names of different sizes to lign up a Tcache entry immediately after our large chunk
+7. Use the overflow bug in the binary to poison the tcache
+8. Allocate a chunk in the `__free_hook` and assign it to `system`
+9. Free a chunk containing the string `/bin/sh\x00`
+10. Win
 
 Exploit script: [exploit.py]({{ "/assets/code/heap_basics/exploit-reference.py" | relative_url }})
 
