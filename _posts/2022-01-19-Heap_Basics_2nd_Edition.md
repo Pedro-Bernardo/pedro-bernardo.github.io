@@ -20,8 +20,7 @@ We covered the following topics:
 
 We solved *gradebook* from the [K3RN3L CTF 2021](https://ctf.k3rn3l4rmy.com/Challenges) via a Tcache Poison attack (unintended solution). This solution walks through obtaining libc leaks and how to forge heap layouts favorable for using the Tcache Poison technique and obtain code execution. 
 
-Binary: https://ctf.k3rn3l4rmy.com/kernelctf-distribution-challs/gradebook/gradebook
-Libc: https://ctf.k3rn3l4rmy.com/kernelctf-distribution-challs/gradebook/libc.so.6
+Download the binary and libc here: [gradebook](https://ctf.k3rn3l4rmy.com/kernelctf-distribution-challs/gradebook/gradebook), [libc.so.6](https://ctf.k3rn3l4rmy.com/kernelctf-distribution-challs/gradebook/libc.so.6)
 
 ### Solution Summary
 1. Allocate a large chunk (0x1000 bytes) 
@@ -37,13 +36,12 @@ Exploit script: [exploit.py]({{ "/assets/code/hap_basics/exploit-reference.py" |
 
 ## References
 
-- Malloc security checks - https://heap-exploitation.dhavalkapil.com/diving_into_glibc_heap/security_checks
-- Malloc internals - https://www.sourceware.org/glibc/wiki/MallocInternals
-- How2heap - https://github.com/shellphish/how2heap
-- Glibc source code - https://elixir.bootlin.com/glibc/latest/source
-- Temple of PWN - https://www.youtube.com/playlist?list=PLiCcguURxSpbD9M0ha-Mvs-vLYt-VKlWt
-- LiveOverflow - https://www.youtube.com/playlist?list=PLhixgUqwRTjxglIswKp9mpkfPNfHkzyeN
-- GEF gdb extension - https://github.com/hugsy/gef
-
+- [Malloc security checks](https://heap-exploitation.dhavalkapil.com/diving_into_glibc_heap/security_checks)
+- [Malloc internals](https://www.sourceware.org/glibc/wiki/MallocInternals)
+- [How2heap](https://github.com/shellphish/how2heap)
+- [Glibc source code](https://elixir.bootlin.com/glibc/latest/source)
+- [Temple of PWN](https://www.youtube.com/playlist?list=PLiCcguURxSpbD9M0ha-Mvs-vLYt-VKlWt)
+- [LiveOverflow](https://www.youtube.com/playlist?list=PLhixgUqwRTjxglIswKp9mpkfPNfHkzyeN)
+- [GEF gdb extension](https://github.com/hugsy/gef)
 
 Lecture Slides: [Heap_Basics.pdf]({{ "/assets/pdf/PWN_Heap_Basics2.pdf" | relative_url }})
