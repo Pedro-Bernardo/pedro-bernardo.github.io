@@ -10,10 +10,10 @@
 
 title: Pedro Bernardo                           # the main title
 
-tagline: Computer Science MsC student. CyberSec enthusiast and CTF player.  # it will display as the sub-title
+tagline: Computer Science MSc. Cybersecurity enthusiast and CTF player.  # it will display as the sub-title
 
 description: >-                        # used by seo meta and the atom feed
-  A minimal, portfolio, sidebar, bootstrap Jekyll theme with responsive web design and focuses on text presentation.
+  A blog where I show my work from CTF challenge writeups, university coursework, and anything else that sparks my curiosity.
 
 # Replace with your domain, e.g. 'https://username.github.io'
 # url: 'protocol://domain'
@@ -48,7 +48,7 @@ social:
 baseurl: ''
 
 # Change to your timezone › http://www.timezoneconverter.com/cgi-bin/findzone/findzone
-timezone: Asia/Shanghai
+timezone: Europe/Lisbon
 
 google_analytics:
   # Fill with your Google Analytics ID
