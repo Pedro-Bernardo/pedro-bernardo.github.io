@@ -32,7 +32,7 @@ Download the binary and libc here: [gradebook](https://ctf.k3rn3l4rmy.com/kernel
 7. Free a chunk containing the string `/bin/sh\x00`
 8. Win
 
-Exploit script: [exploit.py]({{ "/assets/code/hap_basics/exploit-reference.py" | relative_url }})
+Exploit script: [exploit.py]({{ "/assets/code/heap_basics/exploit-reference.py" | relative_url }})
 
 ## References
 
