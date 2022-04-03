@@ -36,7 +36,7 @@ We are given a tar file containing the following:
 ## hfs_browser
 It visits a user-provided url to a JavaScript (JS) file and executes that JS using [duktape](https://github.com/svaarala/duktape), a portable and embeddable Javascript engine.
 
-```checksec
+```
 vagrant@ubuntu-focal:~/shared/midnightQ22/hfs/chall$ checksec hfs_browser
 [*] '/home/vagrant/shared/midnightQ22/hfs/chall/hfs_browser'
     Arch:     amd64-64-little
@@ -63,7 +63,7 @@ In `duktape.diff` the challenge authors modify functions related to typed arrays
 ### duk_bi_typedarray_midnight
 
 Looking at `duk_bi_typedarray_midnight`, we discovered that it doesn't clear the pointer `buf->curr_alloc` after freeing, leading to **use-after-free** (UAF) and **double-free** vulnerabilities.
-```c=
+```c
 DUK_INTERNAL duk_ret_t duk_bi_typedarray_midnight(duk_hthread *thr) {
     duk_hbufobj *h_bufobj = NULL;
     duk_hbuffer_dynamic * buf = NULL;
