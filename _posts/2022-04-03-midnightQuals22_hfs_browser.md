@@ -164,7 +164,7 @@ Eventually, we decided to try the following exploit:
 
 # Libc Leak
 
-We created a chunk with size 0x1000, freed it and then inspected its contents. We got a libc pointer in the second QWORD of the chunk.
+We created a chunk with size 0x1000, freed it and then inspected its contents. We got a libc pointer in the the chunk.
 
 ```js
 function hex(a) {
