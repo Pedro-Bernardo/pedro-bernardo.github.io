@@ -17,7 +17,7 @@ Solved with [@jorge](https://twitter.com/jorge_cmartins) and [@s3np41k1r1t0](htt
 
 <!-- > We have a very safe core with a very safe enclave -->
 
-## TL;DR
+# TL;DR
 1. Given binary visits urls to JavaScript files and uses an embedded JavaScript engine to execute it.
 2. A Patch in the embedded JavaScript engine introduces a **use-after-free** through the `midnight()` method for typed arrays.
 3. Write JS to trigger the UAF to get a libc leak
@@ -26,14 +26,14 @@ Solved with [@jorge](https://twitter.com/jorge_cmartins) and [@s3np41k1r1t0](htt
 6. Free chunk containing `cat *la*`
 7. Win
 
-## Problem:
+##Problem:
 We are given a tar file containing the following:
 - `hfs_browser` - the binary
 - `libc-2.31.so, libcurl-gnutls.so.4.6.0"` - libraries used remotely
 - `readme.txt` - instructions on how to run and debugging tips
 - `duktape.diff` - a diff file containing a patch applied by the challenge authors to the running `duktape`.
 
-### hfs_browser
+## hfs_browser
 It visits a user-provided url to a JavaScript (JS) file and executes that JS using [duktape](https://github.com/svaarala/duktape), a portable and embeddable Javascript engine.
 
 ```checksec
@@ -46,7 +46,7 @@ vagrant@ubuntu-focal:~/shared/midnightQ22/hfs/chall$ checksec hfs_browser
     PIE:      No PIE (0x400000)
 ```
 
-### duktape.diff
+## duktape.diff
 In `duktape.diff` the challenge authors modify functions related to typed arrays and garbage collection. Specifically, they do the following modifications:
 - builtins.yaml => add `duk_bi_typedarray_midnight` to the builtins
 - Implements `duk_bi_typedarray_midnight` function.
@@ -60,7 +60,7 @@ In `duktape.diff` the challenge authors modify functions related to typed arrays
 - duk_heap_mark_and_sweep => replace body with `return 1;`
 
 
-#### duk_bi_typedarray_midnight
+### duk_bi_typedarray_midnight
 
 Looking at `duk_bi_typedarray_midnight`, we discovered that it doesn't clear the pointer `buf->curr_alloc` after freeing, leading to **use-after-free** (UAF) and **double-free** vulnerabilities.
 ```c=
@@ -85,7 +85,7 @@ DUK_INTERNAL duk_ret_t duk_bi_typedarray_midnight(duk_hthread *thr) {
 }
 ```
 
-## Debugging
+# Debugging
 To verify if we indeed have a UAF and the double-free vulnerabilites, we used the instructions in the `readme.txt` to clone and patch `duktape`, and compiled it:
 
 ```bash
@@ -147,14 +147,14 @@ Tcachebins[idx=29, size=0x1f0] count=1  ←  Chunk(addr=0x5555555a3df0, size=0x1
 
 We can also access the `fd` and `bk` pointers of freed chunks via indexing the freed array.
 
-## Exploitation
-#### What we have:
+# Exploitation
+### What we have:
 - UAF to modify `tcache_entry->fd` pointer (tcache poison)
     - Enables a write-what-where primitive
 - UAF to leak freed chunk pointers
 - Binary has no `PIE` and `Partial RELRO`, so GOT overwrite is possible.
 
-#### Plan
+### Plan
 Eventually, we decided to try the following exploit:
 1. Leak libc using UAF
 2. Tcache poison to allocate a chunk on the `__free_hook`
@@ -162,7 +162,7 @@ Eventually, we decided to try the following exploit:
 4. Free a chunk containing `/bin/sh\x00`
 5. win :D
 
-## Libc Leak
+# Libc Leak
 
 We created a chunk with size 0x1000, freed it and then inspected its contents. We got a libc pointer in the second QWORD of the chunk.
 
@@ -194,7 +194,7 @@ libc_leak = parseInt(libc_leak_str, 16);
 libc_base = libc_leak - 0x1ed350;
 ```
 
-## Tcache Poison
+# Tcache Poison
 
 Many operations influence the heap layout and the bins. Using functions like `console.log` affected both our leaks, and other operations affected our ability to properly write to the freed chunks.
 
@@ -261,5 +261,5 @@ chunk2.midnight()
 
 Running on the server got us the flag: `midnight{c4nt_h4v3_Us3_4ft3r_fr33s_1f_yoU_d0nt_fr33}`
 
-#### Full exploit:
+# Full exploit:
 [pwn.js]({{ "/assets/code/midnightQuals22/hfs_browser/pwn.js" | relative_url }})

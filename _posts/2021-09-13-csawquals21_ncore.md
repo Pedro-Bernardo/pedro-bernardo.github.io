@@ -13,8 +13,8 @@ authors: ["pedro-bernardo"]
 
 > We have a very safe core with a very safe enclave
 
-## Problem:
-### Server
+# Problem:
+## Server
 We are given a `server.py` file that is running on the server that reads user input and stores it in a `ram.hex` file. The server then uses `vvp` (Icarus Verilog vvp runtime engine) to run a compiled `SystemVerilog` file called `nco`.
 
 For debugging, you can install the `iverilog` compiler, which compiles `SystemVerilog` source files to `vvp assembly`, which can then be executed by `vvp`.
@@ -26,7 +26,7 @@ iverilog -g2009 -o nco ncore_tb.v
 
 The `-g2009` flag informs the compiler of the language generation to support, being `SystemVerilog` supported since `g2009`.
 
-### Verilog VM
+## Verilog VM
 We are also given the file `ncore_tb.v` containing the `Verilog` source code.
 
 Reading through the code we can see that it implements a sort of VM that runs commands stored in its ram, which the user provides.
@@ -63,7 +63,7 @@ initial
 - `load_ram` - reads the contents of the `ram.hex` file into `ram`. 
 - `print_res` - print the last 64 bytes of `ram`
 
-### Instructions
+## Instructions
 The main loop of the VM is parsing the user-provided `ram` for instructions.
 
 The instructions are 2 bytes long and the opcode is always the first 4 bits.
@@ -158,7 +158,7 @@ idx:     0123456701234567
 content: 1000--------
 ```
 
-### Extracting the Flag
+## Extracting the Flag
 
 
 - We cannot access the `safe_rom` where the flag is stored unless `emode = 1`
@@ -172,7 +172,7 @@ The plan:
 4. Wait for timeout
 
 ---
-## The Solution
+# The Solution
 
 ``` python
 def code_at(ram, addr, code):
