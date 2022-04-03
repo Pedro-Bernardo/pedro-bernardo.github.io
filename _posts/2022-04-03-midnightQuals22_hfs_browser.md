@@ -34,7 +34,7 @@ We are given a tar file containing the following:
 - `duktape.diff` - a diff file containing a patch applied by the challenge authors to the running `duktape`.
 
 ## hfs_browser
-It visits a user-provided url to a JavaScript (JS) file and executes that JS using [duktape](https://github.com/svaarala/duktape), a portable and embeddable Javascript engine.
+It visits a user-provided URL to a JavaScript (JS) file and executes that JS using [duktape](https://github.com/svaarala/duktape), a portable and embeddable Javascript engine.
 
 ```
 vagrant@ubuntu-focal:~/shared/midnightQ22/hfs/chall$ checksec hfs_browser
