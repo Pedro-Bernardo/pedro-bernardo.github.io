@@ -201,12 +201,13 @@ Many operations influence the heap layout and the bins. Using functions like `co
 <!-- [solve.py]({{ "/assets/code/csawquals21/ncore/solve.py" | relative_url }}). -->
 After a lot of tweaking, we developed working exploit ([pwn.js]({{ "/assets/code/midnightQuals22/hfs_browser/pwn.js" | relative_url }})):
 
-1. Alocate a chunk of size 0x1e0.
-We chose 0x1e0 since the Tcache was already populated, meaning we would not have problems with the chunk counter.
+1. Alocate a chunk of size 0x1e0. We chose 0x1e0 since the Tcache was already populated, meaning we would not have problems with the chunk counter.
+
 ```js
 chunk = new Uint8Array(0x1e0);
 ```
 2. Free the chunk
+
 ```js
 chunk.midnight();
 ```
