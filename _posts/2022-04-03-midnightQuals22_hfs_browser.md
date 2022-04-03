@@ -17,14 +17,6 @@ Solved with [@jorge](https://twitter.com/jorge_cmartins) and [@s3np41k1r1t0](htt
 
 <!-- > We have a very safe core with a very safe enclave -->
 
-1. TL;DR
-2. Describe problem + readme
-3. Build the js engine and test
-4. Exploitation plan
-5. Switch to the browser
-6. Difficulties
-7. final exploit
-
 ## TL;DR
 1. Given binary visits urls to JavaScript files and uses an embedded JavaScript engine to execute it.
 2. A Patch in the embedded JavaScript engine introduces a **use-after-free** through the `midnight()` method for typed arrays.
