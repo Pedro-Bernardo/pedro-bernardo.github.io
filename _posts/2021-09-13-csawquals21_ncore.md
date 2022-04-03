@@ -6,7 +6,9 @@ authors: ["pedro-bernardo"]
 ---
 
 **Points:** 484 (dynamic)  
+
 **Solves:** 53  
+
 **Description:**  
 
 > We have a very safe core with a very safe enclave

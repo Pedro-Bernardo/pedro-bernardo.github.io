@@ -10,7 +10,9 @@ authors: ["pedro-bernardo"]
 Solved with [@jorge](https://twitter.com/jorge_cmartins) and [@s3np41k1r1t0](https://twitter.com/s3np41k1r1t0)
 
 **Points:** dynamic
+
 **Solves:** 20
+
 <!-- **Description:** -->
 
 <!-- > We have a very safe core with a very safe enclave -->
