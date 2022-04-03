@@ -18,7 +18,7 @@ Solved with [@jorge](https://twitter.com/jorge_cmartins) and [@s3np41k1r1t0](htt
 <!-- > We have a very safe core with a very safe enclave -->
 
 # TL;DR
-1. Given binary visits urls to JavaScript files and uses an embedded JavaScript engine to execute it.
+1. The given binary visits URLs to JavaScript files interpretes them using an embedded JavaScript engine.
 2. A Patch in the embedded JavaScript engine introduces a **use-after-free** through the `midnight()` method for typed arrays.
 3. Write JS to trigger the UAF to get a libc leak
 4. Use UAF to perform a tcache poison attack
