@@ -26,7 +26,7 @@ Solved with [@jorge](https://twitter.com/jorge_cmartins) and [@s3np41k1r1t0](htt
 6. Free chunk containing `cat *la*`
 7. Win
 
-# Problem:
+# The Problem
 We are given a tar file containing the following:
 - `hfs_browser` - the binary
 - `libc-2.31.so, libcurl-gnutls.so.4.6.0"` - libraries used remotely
@@ -154,7 +154,7 @@ We can also access the `fd` and `bk` pointers of freed chunks via indexing the f
 - UAF to leak freed chunk pointers
 - Binary has no `PIE` and `Partial RELRO`, so GOT overwrite is possible.
 
-### Plan
+### Plan:
 Eventually, we decided to try the following exploit:
 1. Leak libc using UAF
 2. Tcache poison to allocate a chunk on the `__free_hook`
