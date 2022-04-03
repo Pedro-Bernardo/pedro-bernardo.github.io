@@ -26,7 +26,7 @@ Solved with [@jorge](https://twitter.com/jorge_cmartins) and [@s3np41k1r1t0](htt
 6. Free chunk containing `cat *la*`
 7. Win
 
-##Problem:
+# Problem:
 We are given a tar file containing the following:
 - `hfs_browser` - the binary
 - `libc-2.31.so, libcurl-gnutls.so.4.6.0"` - libraries used remotely
