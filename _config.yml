@@ -29,6 +29,9 @@ github:
 twitter:
   username: bl4ck_pwn            # change to your twitter username
 
+mastodon:
+  username: "@bl4ck"
+
 social:
   name: Pedro Bernardo                  # it will shows as the copyright owner in Footer
   email: pedro.m.s.bernardo@tecnico.ulisboa.pt             # change to your email address
