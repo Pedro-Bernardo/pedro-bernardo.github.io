@@ -54,15 +54,15 @@ baseurl: ''
 # Change to your timezone › http://www.timezoneconverter.com/cgi-bin/findzone/findzone
 timezone: Europe/Lisbon
 
-google_analytics:
+#google_analytics:
   # Fill with your Google Analytics ID
-  id: ''
+  #id: ''
   # The Google Analytics pageviews switch.
   # DO NOT enable it unless you know how to deploy the Google Analytics superProxy.
-  pv: false
+  #pv: false
   # superProxy baseURL and URL, only valid when `google_analytics.pv` is set to 'true'
-  proxy_baseurl: ''
-  proxy_url: ''
+  #proxy_baseurl: ''
+  #proxy_url: ''
 
 
 disqus:
