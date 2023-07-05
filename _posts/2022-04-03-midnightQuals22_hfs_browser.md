@@ -3,6 +3,7 @@ title: hfs_browser -- Midnight Sun CTF 2022 Quals
 tags: ["midnightsunquals22", "pwn", "javascript"]
 date: 2022-04-03
 authors: ["pedro-bernardo"]
+categories: [CTF Writeups]
 ---
 
 <!-- # hfs_browser -- Midnight Sun CTF 2022 Quals -->
