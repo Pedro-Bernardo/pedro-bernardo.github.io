@@ -3,6 +3,7 @@ title: ncore -- CSAW Quals 2021
 tags: ["csawquals21", "rev"]
 date: 2021-09-13
 authors: ["pedro-bernardo"]
+categories: [CTF Writeups]
 ---
 
 **Points:** 484 (dynamic)  
