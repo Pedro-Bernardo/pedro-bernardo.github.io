@@ -10,7 +10,7 @@
 
 title: Pedro Bernardo                           # the main title
 
-tagline: Computer Science MSc. Websec and Formal Methods PhD student at [TU Wien](https://secpriv.tuwien.ac.at/). Cybersecurity enthusiast and CTF player @ [STT](https://sectt.github.io/) and [WE_0WN_Y0U](https://w0y.at/).  # it will display as the sub-title
+tagline: Computer Science MSc. Websec and Formal Methods PhD student at <a href="https://secpriv.tuwien.ac.at/">TU Wien</a>. Cybersecurity enthusiast and CTF player @ <a href="https://sectt.github.io/">STT</a> and <a href="https://w0y.at/">WE_0WN_Y0U</a>.  # it will display as the sub-title
 
 description: >-                        # used by seo meta and the atom feed
   A blog where I show my work from CTF challenge writeups, university coursework, and anything else that sparks my curiosity.
