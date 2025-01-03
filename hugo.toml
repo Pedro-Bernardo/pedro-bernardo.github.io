@@ -16,18 +16,23 @@ pygmentscodefencesguesssyntax = true
 
 [[params.social]]
 name = "GitHub"
-icon = "github"
-url = "https://example.com"
+icon = "fa-brands fa-github"
+url = "https://github.com/pedro-bernardo"
 
 [[params.social]]
 name = "Twitter"
-icon = "twitter"
-url = "https://example.com"
+icon = "fa-brands fa-twitter"
+url = "https://x.com/bl4ck_pwn"
 
 [[params.social]]
-name = "BlueSky"
-icon = "bluesky"
-url = "https://example.com"
+name = "LinkedIn"
+icon = "fa-brands fa-linkedin"
+url = "https://linked.in/in/pedro-bernardo"
+
+[[params.social]]
+name = "GoogleScholar"
+icon = "fa fa-graduation-cap"
+url = "https://scholar.google.com/citations?user=SDzErw0AAAAJ&hl=en"
 
 [[menu.main]]
 name = "CV"
@@ -59,5 +64,9 @@ source = 'assets/img'
 target = 'static/img'
 
 [[module.mounts]]
-source = 'assets/code'
-target = 'static/code'
+source = 'assets/pdf'
+target = 'static/pdf'
+
+[[module.mounts]]
+source = 'assets/misc'
+target = 'static/misc'
