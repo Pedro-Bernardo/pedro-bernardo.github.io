@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Categories on Pedro Bernardo</title>
+    <link>//localhost:1313/categories/</link>
+    <description>Recent content in Categories on Pedro Bernardo</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Sun, 03 Apr 2022 00:00:00 +0000</lastBuildDate>
+    <atom:link href="//localhost:1313/categories/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>CTF Writeups</title>
+      <link>//localhost:1313/categories/ctf-writeups/</link>
+      <pubDate>Sun, 03 Apr 2022 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/categories/ctf-writeups/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Lectures</title>
+      <link>//localhost:1313/categories/lectures/</link>
+      <pubDate>Wed, 19 Jan 2022 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/categories/lectures/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Course Work</title>
+      <link>//localhost:1313/categories/course-work/</link>
+      <pubDate>Fri, 29 Nov 2019 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/categories/course-work/</guid>
+      <description></description>
+    </item>
+  </channel>
+</rss>

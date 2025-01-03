@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html><head lang="en"><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+	<meta charset="utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge"><title>ncore -- CSAW Quals 2021 - Pedro Bernardo</title><meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="description" content="Points: 484 (dynamic)
+Solves: 53
+Description:
+We have a very safe core with a very safe enclave
+Problem: Server We are given a server.py file that is running on the server that reads user input and stores it in a ram.hex file. The server then uses vvp (Icarus Verilog vvp runtime engine) to run a compiled SystemVerilog file called nco.
+For debugging, you can install the iverilog compiler, which compiles SystemVerilog source files to vvp assembly, which can then be executed by vvp." />
+	<meta property="og:image" content=""/>
+	<meta property="og:title" content="ncore -- CSAW Quals 2021" />
+<meta property="og:description" content="Points: 484 (dynamic)
+Solves: 53
+Description:
+We have a very safe core with a very safe enclave
+Problem: Server We are given a server.py file that is running on the server that reads user input and stores it in a ram.hex file. The server then uses vvp (Icarus Verilog vvp runtime engine) to run a compiled SystemVerilog file called nco.
+For debugging, you can install the iverilog compiler, which compiles SystemVerilog source files to vvp assembly, which can then be executed by vvp." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="//localhost:1313/posts/2021-09-13-csawquals21_ncore/" /><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2021-09-13T00:00:00+00:00" />
+<meta property="article:modified_time" content="2021-09-13T00:00:00+00:00" />
+
+<meta name="twitter:card" content="summary"/><meta name="twitter:title" content="ncore -- CSAW Quals 2021"/>
+<meta name="twitter:description" content="Points: 484 (dynamic)
+Solves: 53
+Description:
+We have a very safe core with a very safe enclave
+Problem: Server We are given a server.py file that is running on the server that reads user input and stores it in a ram.hex file. The server then uses vvp (Icarus Verilog vvp runtime engine) to run a compiled SystemVerilog file called nco.
+For debugging, you can install the iverilog compiler, which compiles SystemVerilog source files to vvp assembly, which can then be executed by vvp."/>
+<script src="//localhost:1313/js/feather.min.js"></script>
+	
+	
+        <link href="//localhost:1313/css/fonts.2c2227b81b1970a03e760aa2e6121cd01f87c88586803cbb282aa224720a765f.css" rel="stylesheet">
+	
+
+	
+	<link rel="stylesheet" type="text/css" media="screen" href="//localhost:1313/css/main.5cebd7d4fb2b97856af8d32a6def16164fcf7d844e98e236fcb3559655020373.css" />
+		<link id="darkModeStyle" rel="stylesheet" type="text/css" href="//localhost:1313/css/dark.d22e2a2879d933a4b781535fc4c4c716e9f9d35ea4986dd0cbabda82effc4bdd.css"   />
+	
+
+	
+	
+		<script type="text/javascript"
+		src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+		</script>
+
+		
+		<script type="text/x-mathjax-config">
+		MathJax.Hub.Config({
+			tex2jax: {
+				inlineMath: [['$','$'], ['\\(','\\)']],
+				displayMath: [['$$','$$'], ['\[','\]']],
+				processEscapes: true,
+				processEnvironments: true,
+				skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+				TeX: { equationNumbers: { autoNumber: "AMS" },
+						 extensions: ["AMSmath.js", "AMSsymbols.js"] }
+			}
+		});
+		</script>
+	
+
+	
+	
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.css">
+		<script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.js"></script>
+		<script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body);"></script>
+
+		
+		<script>
+			document.addEventListener("DOMContentLoaded", function() {
+					renderMathInElement(document.body, {
+							delimiters: [
+									{left: "$$", right: "$$", display: true},
+									{left: "$", right: "$", display: false}
+							]
+					});
+			});
+			</script>
+	
+
+	
+</head>
+<body>
+        <div class="content"><header>
+	<div class="main">
+		<a href="//localhost:1313/">Pedro Bernardo</a>
+	</div>
+	<nav>
+		
+		<a href="/blog">Blog</a>
+		
+		<a href="/blog/posts">All posts</a>
+		
+		<a href="/tags">Tags</a>
+		
+		
+	</nav>
+</header>
+
+<main>
+	<article>
+		<div class="title">
+			<h1 class="title">ncore -- CSAW Quals 2021</h1>
+			<div class="meta">Posted on Sep 13, 2021</div>
+		</div>
+		
+
+		
+
+		<section class="body">
+			<p><strong>Points:</strong> 484 (dynamic)</p>
+<p><strong>Solves:</strong> 53</p>
+<p><strong>Description:</strong></p>
+<blockquote>
+<p>We have a very safe core with a very safe enclave</p>
+</blockquote>
+<h1 id="problem">Problem:</h1>
+<h2 id="server">Server</h2>
+<p>We are given a <code>server.py</code> file that is running on the server that reads user input and stores it in a <code>ram.hex</code> file. The server then uses <code>vvp</code> (Icarus Verilog vvp runtime engine) to run a compiled <code>SystemVerilog</code> file called <code>nco</code>.</p>
+<p>For debugging, you can install the <code>iverilog</code> compiler, which compiles <code>SystemVerilog</code> source files to <code>vvp assembly</code>, which can then be executed by <code>vvp</code>.</p>
+<p>You can compile <code>SystemVerilog</code> with the following command:</p>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>iverilog -g2009 -o nco ncore_tb.v
+</span></span></code></pre></div><p>The <code>-g2009</code> flag informs the compiler of the language generation to support, being <code>SystemVerilog</code> supported since <code>g2009</code>.</p>
+<h2 id="verilog-vm">Verilog VM</h2>
+<p>We are also given the file <code>ncore_tb.v</code> containing the <code>Verilog</code> source code.</p>
+<p>Reading through the code we can see that it implements a sort of VM that runs commands stored in its ram, which the user provides.</p>
+<p>The VM&rsquo;s structures are the following:</p>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>safe_rom - 256 byte array 
+</span></span><span style="display:flex;"><span>ram      - 256 byte array
+</span></span><span style="display:flex;"><span>key      - 32 bit array
+</span></span><span style="display:flex;"><span>emode    - 1 bit
+</span></span><span style="display:flex;"><span>regfile  - array with 4 32-bit entries
+</span></span></code></pre></div><p>The startup sequence looks like this:</p>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-verilog" data-lang="verilog"><span style="display:flex;"><span><span style="color:#ff7b72">initial</span> 
+</span></span><span style="display:flex;"><span>    <span style="color:#ff7b72">begin</span><span style="color:#ff7b72;font-weight:bold">:</span> initial_block
+</span></span><span style="display:flex;"><span>        init_regs();
+</span></span><span style="display:flex;"><span>        emode <span style="color:#ff7b72;font-weight:bold">=</span> <span style="color:#a5d6ff">0</span>;
+</span></span><span style="display:flex;"><span>        set_key();
+</span></span><span style="display:flex;"><span>        load_safeROM();
+</span></span><span style="display:flex;"><span>        load_ram();
+</span></span><span style="display:flex;"><span>        
+</span></span><span style="display:flex;"><span>        #<span style="color:#a5d6ff">1500000</span>;
+</span></span><span style="display:flex;"><span>        <span style="color:#8b949e;font-style:italic">// after 1500000 time units, call print_res
+</span></span></span><span style="display:flex;"><span><span style="color:#8b949e;font-style:italic"></span>        print_res(); 
+</span></span><span style="display:flex;"><span>        $finish;
+</span></span><span style="display:flex;"><span>    <span style="color:#ff7b72">end</span> <span style="color:#ff7b72;font-weight:bold">:</span>initial_block
+</span></span></code></pre></div><ul>
+<li><code>init_regs</code> - initializes the 4 registers in <code>regfile</code> to 0</li>
+<li><code>set_key</code> - reads 32 bits from <code>/dev/urandom</code> and stores it in <code>key</code></li>
+<li><code>load_safeROM</code> - reads the contents of a file called <code>flag.txt</code> into <code>safe_rom</code></li>
+<li><code>load_ram</code> - reads the contents of the <code>ram.hex</code> file into <code>ram</code>.</li>
+<li><code>print_res</code> - print the last 64 bytes of <code>ram</code></li>
+</ul>
+<h2 id="instructions">Instructions</h2>
+<p>The main loop of the VM is parsing the user-provided <code>ram</code> for instructions.</p>
+<p>The instructions are 2 bytes long and the opcode is always the first 4 bits.</p>
+<p>These instructions can be used:</p>
+<h4 id="add-opcode-0">ADD (opcode 0)</h4>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>regfile[DD] = regfile[R1] + regfile[R2]; pc += 2;
+</span></span><span style="display:flex;"><span>idx:     0123456701234567
+</span></span><span style="display:flex;"><span>content: 0000DDR1R2------
+</span></span></code></pre></div><h4 id="inc-opcode-12">INC (opcode 12)</h4>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>regfile[DD] = regfile[DD] + 1 ; pc += 2;
+</span></span><span style="display:flex;"><span>idx:     0123456701234567
+</span></span><span style="display:flex;"><span>content: 1100DD----------
+</span></span></code></pre></div><h4 id="sub--opcode-1">SUB  (opcode 1)</h4>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>regfile[DD] = regfile[R1] - regfile[R2]  ; pc += 2;
+</span></span><span style="display:flex;"><span>idx:     0123456701234567
+</span></span><span style="display:flex;"><span>content: 0000DDR1R2------
+</span></span></code></pre></div><h4 id="movf-opcode-5">MOVF (opcode 5)</h4>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>regfile[DD] = ram[RAM_ADDR] ; pc += 2;
+</span></span><span style="display:flex;"><span>idx:     0123456701234567
+</span></span><span style="display:flex;"><span>content: 0101DD--RAM_ADDR
+</span></span></code></pre></div><h4 id="movfs-opcode-13">MOVFS (opcode 13)</h4>
+<ul>
+<li>Only in emode</li>
+</ul>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>regfile[DD] = safe_rom[FLAGADDR] ; pc += 2;
+</span></span><span style="display:flex;"><span>idx:     0123456701234567
+</span></span><span style="display:flex;"><span>content: 1101DD--FLAGADDR
+</span></span></code></pre></div><h4 id="movt-opcode-6">MOVT (opcode 6)</h4>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>ram[RAM_ADDR] = regfile[DD][0:7] ; pc += 2;
+</span></span><span style="display:flex;"><span>idx:     0123456701234567
+</span></span><span style="display:flex;"><span>content: 0110DD--RAM_ADDR
+</span></span></code></pre></div><h4 id="jgt-opcode-9">JGT (opcode 9)</h4>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>pc = regfile[r1] &gt; regfile[r2] ? RAM_ADDR : pc+2 
+</span></span><span style="display:flex;"><span>idx:     0123456701234567
+</span></span><span style="display:flex;"><span>content: 1001R1R2RAM_ADDR
+</span></span></code></pre></div><h4 id="jeq-opcode-10">JEQ (opcode 10)</h4>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>pc = regfile[r1] == regfile[r2] ? RAM_ADDR : pc+2
+</span></span><span style="display:flex;"><span>idx:     0123456701234567
+</span></span><span style="display:flex;"><span>content: 1010R1R2RAM_ADDR
+</span></span></code></pre></div><h4 id="jmp-opcode-11">JMP (opcode 11)</h4>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>pc = ram[RAM_ADDR] ; 
+</span></span><span style="display:flex;"><span>idx:     0123456701234567
+</span></span><span style="display:flex;"><span>content: 1011----RAM_ADDR
+</span></span></code></pre></div><h4 id="ent-opcode-7">ENT (opcode 7)</h4>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>if key[0:13] == regfile[0]:
+</span></span><span style="display:flex;"><span>    emode = 1
+</span></span><span style="display:flex;"><span>    regfile[3] = 0
+</span></span><span style="display:flex;"><span>else:
+</span></span><span style="display:flex;"><span>    regfile[3] = 1
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>pc += 2;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>idx:     0123456701234567
+</span></span><span style="display:flex;"><span>content: 0111------------
+</span></span></code></pre></div><h4 id="ext-opcode-8">EXT (opcode 8)</h4>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>emode = 0 ; pc += 2
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>idx:     0123456701234567
+</span></span><span style="display:flex;"><span>content: 1000--------
+</span></span></code></pre></div><h2 id="extracting-the-flag">Extracting the Flag</h2>
+<ul>
+<li>We cannot access the <code>safe_rom</code> where the flag is stored unless <code>emode = 1</code></li>
+<li><code>emode</code> is set to 1 if regfile[0] contains the first 14 bits of secret key obtained from <code>/dev/urandom</code>.</li>
+</ul>
+<p>The plan:</p>
+<ol>
+<li>Brute force the first 14 bits of the key by repeatedly calling <code>ENT</code> with regfile[0] = 1..2^14</li>
+<li>When <code>regfile[3] == 1</code> stop the brute force</li>
+<li>Write the content of <code>safe_rom</code> in the last 64 bytes of <code>ram</code></li>
+<li>Wait for timeout</li>
+</ol>
+<hr>
+<h1 id="the-solution">The Solution</h1>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#ff7b72">def</span> <span style="color:#d2a8ff;font-weight:bold">code_at</span>(ram, addr, code):
+</span></span><span style="display:flex;"><span>    ram[addr]   <span style="color:#ff7b72;font-weight:bold">=</span> p8(code[<span style="color:#a5d6ff">0</span>])
+</span></span><span style="display:flex;"><span>    ram[addr<span style="color:#ff7b72;font-weight:bold">+</span><span style="color:#a5d6ff">1</span>] <span style="color:#ff7b72;font-weight:bold">=</span> p8(code[<span style="color:#a5d6ff">1</span>])
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span><span style="color:#ff7b72">def</span> <span style="color:#d2a8ff;font-weight:bold">go</span>():
+</span></span><span style="display:flex;"><span>    s <span style="color:#ff7b72;font-weight:bold">=</span> remote(HOST, PORT)
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    ram <span style="color:#ff7b72;font-weight:bold">=</span> [<span style="color:#79c0ff">b</span><span style="color:#a5d6ff">&#39;</span><span style="color:#79c0ff">\x00</span><span style="color:#a5d6ff">&#39;</span> <span style="color:#ff7b72">for</span> i <span style="color:#ff7b72;font-weight:bold">in</span> range(<span style="color:#a5d6ff">256</span>)]
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#8b949e;font-style:italic"># create an infinite loop</span>
+</span></span><span style="display:flex;"><span>    code_at(ram, <span style="color:#a5d6ff">150</span>, JMP(<span style="color:#a5d6ff">154</span>))
+</span></span><span style="display:flex;"><span>    code_at(ram, <span style="color:#a5d6ff">154</span>, JMP(<span style="color:#a5d6ff">150</span>))
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#8b949e;font-style:italic"># try to enter emode (reg0 == key? reg3 = 1 else reg3 = 0)</span>
+</span></span><span style="display:flex;"><span>    code_at(ram, <span style="color:#a5d6ff">0</span>, ENT())
+</span></span><span style="display:flex;"><span>    code_at(ram, <span style="color:#a5d6ff">2</span>, JEQ(<span style="color:#a5d6ff">8</span>, <span style="color:#a5d6ff">2</span>, <span style="color:#a5d6ff">3</span>))
+</span></span><span style="display:flex;"><span>    code_at(ram, <span style="color:#a5d6ff">4</span>, INC(<span style="color:#a5d6ff">0</span>))
+</span></span><span style="display:flex;"><span>    code_at(ram, <span style="color:#a5d6ff">6</span>, JMP(<span style="color:#a5d6ff">0</span>))
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#8b949e;font-style:italic"># hardcode the flag leakage instructions for simplicity</span>
+</span></span><span style="display:flex;"><span>    pc <span style="color:#ff7b72;font-weight:bold">=</span> <span style="color:#a5d6ff">8</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#ff7b72">for</span> i <span style="color:#ff7b72;font-weight:bold">in</span> range(<span style="color:#a5d6ff">0</span>, <span style="color:#a5d6ff">32</span>):
+</span></span><span style="display:flex;"><span>        code_at(ram, pc, MOVFS(<span style="color:#a5d6ff">2</span>, i))
+</span></span><span style="display:flex;"><span>        pc <span style="color:#ff7b72;font-weight:bold">+=</span> <span style="color:#a5d6ff">2</span>
+</span></span><span style="display:flex;"><span>        code_at(ram, pc, STORE(<span style="color:#a5d6ff">2</span>, <span style="color:#a5d6ff">255</span><span style="color:#ff7b72;font-weight:bold">-</span>i))
+</span></span><span style="display:flex;"><span>        pc <span style="color:#ff7b72;font-weight:bold">+=</span> <span style="color:#a5d6ff">2</span>
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#8b949e;font-style:italic"># jump to infinite loop and wait for timeout</span>
+</span></span><span style="display:flex;"><span>    code_at(ram, pc, JMP(<span style="color:#a5d6ff">150</span>))
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#8b949e;font-style:italic"># separate each character by a space</span>
+</span></span><span style="display:flex;"><span>    bytestrm <span style="color:#ff7b72;font-weight:bold">=</span> <span style="color:#a5d6ff">&#34; &#34;</span><span style="color:#ff7b72;font-weight:bold">.</span>join([c<span style="color:#ff7b72;font-weight:bold">.</span>hex() <span style="color:#ff7b72">for</span> c <span style="color:#ff7b72;font-weight:bold">in</span> ram])
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    s<span style="color:#ff7b72;font-weight:bold">.</span>sendlineafter(<span style="color:#79c0ff">b</span><span style="color:#a5d6ff">&#39;WELCOME&#39;</span>, bytestrm)
+</span></span><span style="display:flex;"><span>    s<span style="color:#ff7b72;font-weight:bold">.</span>interactive()
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>go()
+</span></span></code></pre></div><p>Running the script, the server outputs the following:</p>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>ENT
+</span></span><span style="display:flex;"><span>66 6c 61 67 7b 64 30 6e 54 5f 6d 45 53 73 5f 77 69 54 68 5f 74 48 65 5f 73 43 68 4c 41 6d 69 7d 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+</span></span></code></pre></div><p>From which we can decode the flag: <code>flag{d0nT_mESs_wiTh_tHe_sChLAmi}</code></p>
+<p>The full solution can be found in [solve.py]({{ &ldquo;/assets/code/csawquals21/ncore/solve.py&rdquo; | relative_url }}).</p>
+
+		</section>
+
+		<div class="post-tags">
+			
+			
+			<nav class="nav tags">
+				<ul class="tags">
+					
+					<li><a href="/tags/csawquals21">csawquals21</a></li>
+					
+					<li><a href="/tags/rev">rev</a></li>
+					
+				</ul>
+			</nav>
+			
+			
+		</div>
+		</article>
+</main>
+<footer>
+  <div style="display:flex"><a class="soc" href="https://example.com" rel="me" title="GitHub"><i data-feather="github"></i></a>
+    <a class="border"></a><a class="soc" href="https://example.com" rel="me" title="Twitter"><i data-feather="twitter"></i></a>
+    <a class="border"></a><a class="soc" href="https://example.com" rel="me" title="BlueSky"><i data-feather="bluesky"></i></a>
+    <a class="border"></a></div>
+  <div class="footer-info">
+    2024  <a
+      href="https://github.com/athul/archie">Archie Theme</a> | Built with <a href="https://gohugo.io">Hugo</a>
+  </div>
+</footer>
+<script>
+  feather.replace()
+</script></div>
+    </body>
+</html>

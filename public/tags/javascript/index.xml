@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Javascript on Pedro Bernardo</title>
+    <link>//localhost:1313/tags/javascript/</link>
+    <description>Recent content in Javascript on Pedro Bernardo</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Sun, 03 Apr 2022 00:00:00 +0000</lastBuildDate>
+    <atom:link href="//localhost:1313/tags/javascript/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>hfs_browser -- Midnight Sun CTF 2022 Quals</title>
+      <link>//localhost:1313/blog/posts/2022-04-03-midnightquals22_hfs_browser/</link>
+      <pubDate>Sun, 03 Apr 2022 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/blog/posts/2022-04-03-midnightquals22_hfs_browser/</guid>
+      <description>Solved with @jorge and @s3np41k1r1t0 ar Points: dynamic&#xA;Solves: 20&#xA;TL;DR Find a UAF in the midnight() method for JS typed arrays Exploit the UAF to get a libc leak Exploit the UAF to perform a tcache poison attack Set __free_hook to system Free a chunk containing cat *la* Win The Problem We are given a tar file containing the following:&#xA;hfs_browser - the binary libc-2.31.so, libcurl-gnutls.so.4.6.0&amp;quot; - libraries used remotely readme.</description>
+    </item>
+  </channel>
+</rss>

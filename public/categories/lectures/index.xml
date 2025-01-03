@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Lectures on Pedro Bernardo</title>
+    <link>//localhost:1313/categories/lectures/</link>
+    <description>Recent content in Lectures on Pedro Bernardo</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Wed, 19 Jan 2022 00:00:00 +0000</lastBuildDate>
+    <atom:link href="//localhost:1313/categories/lectures/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Heap Basics Lecture - 2022</title>
+      <link>//localhost:1313/blog/posts/2022-01-19-heap_basics_2nd_edition/</link>
+      <pubDate>Wed, 19 Jan 2022 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/blog/posts/2022-01-19-heap_basics_2nd_edition/</guid>
+      <description>The second rendition of the Glibc&amp;rsquo;s Heap Basics and How to Exploit it* lecture.&#xA;We covered the following topics:&#xA;Chunks and chunk implementation Coalescing Main arena and Bins Tcache Common attacks Exploit development walkthrough Demo We solved gradebook from the K3RN3L CTF 2021 via a Tcache Poison attack (unintended solution). This solution walks through obtaining libc leaks and how to forge heap layouts favorable for using the Tcache Poison technique to obtain code execution.</description>
+    </item>
+    <item>
+      <title>Heap Exploitation Lecture</title>
+      <link>//localhost:1313/blog/posts/2019-12-03-heap_exploitation_lecture/</link>
+      <pubDate>Tue, 03 Dec 2019 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/blog/posts/2019-12-03-heap_exploitation_lecture/</guid>
+      <description>Lecture with Jorge on Glibc&amp;rsquo;s Heap basics and how to exploit it.&#xA;We covered the following topics:&#xA;Chunks and chunk implementation Coalescing Main arena and Bins Tcache Common attacks The lecture slides can be downloaded here</description>
+    </item>
+  </channel>
+</rss>

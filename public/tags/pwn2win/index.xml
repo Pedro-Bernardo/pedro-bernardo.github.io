@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Pwn2win on Pedro Bernardo</title>
+    <link>//localhost:1313/tags/pwn2win/</link>
+    <description>Recent content in Pwn2win on Pedro Bernardo</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Sun, 10 Nov 2019 00:00:00 +0000</lastBuildDate>
+    <atom:link href="//localhost:1313/tags/pwn2win/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Random Vault -- Pwn2Win 2019 CTF</title>
+      <link>//localhost:1313/blog/posts/2019-11-10-pwn2win19_random_vault/</link>
+      <pubDate>Sun, 10 Nov 2019 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/blog/posts/2019-11-10-pwn2win19_random_vault/</guid>
+      <description>With Jorge&#xA;Points: 303 (dynamic) Solves: 18&#xA;TL;DR Only two Format String vulnerability allowed. Use first Format String to bypass PIE mitigation Use second Format String to: change srand() seed value change function pointer Built shellcode and get shell Reversing Binary Mitigations Arch: amd64-64-little RELRO: FULL RELRO STACK: Canary Found NX: NX enabled PIE: PIE enabled The binary functionality is pretty simple:&#xA;1. Change username Let&amp;rsquo;s you change the username once, will lead to printf(username).</description>
+    </item>
+  </channel>
+</rss>

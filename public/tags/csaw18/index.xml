@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Csaw18 on Pedro Bernardo</title>
+    <link>//localhost:1313/tags/csaw18/</link>
+    <description>Recent content in Csaw18 on Pedro Bernardo</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Thu, 20 Sep 2018 00:00:00 +0000</lastBuildDate>
+    <atom:link href="//localhost:1313/tags/csaw18/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>shell-&gt;code -- CSAW2018 Quals</title>
+      <link>//localhost:1313/blog/posts/2018-09-20-csaw18_shell-%5Ccode/</link>
+      <pubDate>Thu, 20 Sep 2018 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/blog/posts/2018-09-20-csaw18_shell-%5Ccode/</guid>
+      <description>Points: 100&#xA;Solves: 261&#xA;Description:&#xA;Linked lists are great! They let you chain pieces of data together.&#xA;nc pwn.chal.csaw.io 9005&#xA;flag format: flag{...}&#xA;Given:&#xA;shellpointcode&#xA;Introduction shell-&amp;gt;code was a 100 points pwn challenge on the CSAW’18 CTF Qualification Round&#xA;Reversing (The Problem) The clue was: &amp;ldquo;Linked lists are great! They let you chain pieces of data together&amp;rdquo;&#xA;Running checksec on the binary gives the following result:&#xA;This gives us a few clues already:</description>
+    </item>
+  </channel>
+</rss>

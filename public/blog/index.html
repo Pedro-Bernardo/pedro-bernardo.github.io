@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html>
+	<head lang="en"><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+	<meta charset="utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge"><title> - Pedro Bernardo</title><meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="description" content="" />
+	<meta property="og:image" content=""/>
+	<link rel="alternate" type="application/rss+xml" href="//localhost:1313/blog/index.xml" title="Pedro Bernardo" />
+	<meta property="og:title" content="" />
+<meta property="og:description" content="" />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="//localhost:1313/blog/" />
+
+<meta name="twitter:card" content="summary"/><meta name="twitter:title" content=""/>
+<meta name="twitter:description" content=""/>
+<script src="//localhost:1313/js/feather.min.js"></script>
+	
+	
+        <link href="//localhost:1313/css/fonts.0db1b638c3c6b12e3f0bf5303b558492d936bf9102ec4c4ba2bdc315e2a4184f.css" rel="stylesheet">
+	
+
+	
+	<link rel="stylesheet" type="text/css" media="screen" href="//localhost:1313/css/main.5cebd7d4fb2b97856af8d32a6def16164fcf7d844e98e236fcb3559655020373.css" />
+		<link id="darkModeStyle" rel="stylesheet" type="text/css" href="//localhost:1313/css/dark.d22e2a2879d933a4b781535fc4c4c716e9f9d35ea4986dd0cbabda82effc4bdd.css"   />
+	
+
+	
+	
+		<script type="text/javascript"
+		src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+		</script>
+
+		
+		<script type="text/x-mathjax-config">
+		MathJax.Hub.Config({
+			tex2jax: {
+				inlineMath: [['$','$'], ['\\(','\\)']],
+				displayMath: [['$$','$$'], ['\[','\]']],
+				processEscapes: true,
+				processEnvironments: true,
+				skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+				TeX: { equationNumbers: { autoNumber: "AMS" },
+						 extensions: ["AMSmath.js", "AMSsymbols.js"] }
+			}
+		});
+		</script>
+	
+
+	
+	
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.css">
+		<script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.js"></script>
+		<script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body);"></script>
+
+		
+		<script>
+			document.addEventListener("DOMContentLoaded", function() {
+					renderMathInElement(document.body, {
+							delimiters: [
+									{left: "$$", right: "$$", display: true},
+									{left: "$", right: "$", display: false}
+							]
+					});
+			});
+			</script>
+	
+
+	
+</head>
+
+	<body>
+		<div class="content">
+			<header>
+	<div class="main">
+		<a href="//localhost:1313/">Pedro Bernardo</a>
+	</div>
+	<nav>
+		
+		<a href="/blog">Blog</a>
+		
+		<a href="/blog/posts">All posts</a>
+		
+		<a href="/tags">Tags</a>
+		
+		<a href="/">CV</a>
+		
+		
+	</nav>
+</header>
+
+			
+			<main class="list">
+				<div class="site-description"><p>CTF Writeup and Tech Adventures Blog</p></div>
+				
+				
+				
+				<section class="list-item">
+					<h1 class="title"><a href="/blog/posts/2022-04-03-midnightquals22_hfs_browser/">hfs_browser -- Midnight Sun CTF 2022 Quals</a></h1>
+					<time>Apr 3, 2022</time>
+					<br><div class="description">
+	
+	Exploiting a User-After-Free vulnerability in a JavaScript interpreter to get arbitrary code execution!
+	
+</div>
+					<a class="readmore" href="/blog/posts/2022-04-03-midnightquals22_hfs_browser/">Read more ⟶</a>
+				</section>
+				
+				<section class="list-item">
+					<h1 class="title"><a href="/blog/posts/2022-01-19-heap_basics_2nd_edition/">Heap Basics Lecture - 2022</a></h1>
+					<time>Jan 19, 2022</time>
+					<br><div class="description">
+	
+	The second rendition of the Glibc&rsquo;s Heap Basics and How to Exploit it* lecture.
+We covered the following topics:
+Chunks and chunk implementation Coalescing Main arena and Bins Tcache Common attacks Exploit development walkthrough Demo We solved gradebook from the K3RN3L CTF 2021 via a Tcache Poison attack (unintended solution). This solution walks through obtaining libc leaks and how to forge heap layouts favorable for using the Tcache Poison technique to obtain code execution.&hellip;
+	
+</div>
+					<a class="readmore" href="/blog/posts/2022-01-19-heap_basics_2nd_edition/">Read more ⟶</a>
+				</section>
+				
+				<section class="list-item">
+					<h1 class="title"><a href="/blog/posts/2021-09-13-csawquals21_ncore/">ncore -- CSAW Quals 2021</a></h1>
+					<time>Sep 13, 2021</time>
+					<br><div class="description">
+	
+	Points: 484 (dynamic)
+Solves: 53
+Description:
+We have a very safe core with a very safe enclave
+Problem: Server We are given a server.py file that is running on the server that reads user input and stores it in a ram.hex file. The server then uses vvp (Icarus Verilog vvp runtime engine) to run a compiled SystemVerilog file called nco.
+For debugging, you can install the iverilog compiler, which compiles SystemVerilog source files to vvp assembly, which can then be executed by vvp.&hellip;
+	
+</div>
+					<a class="readmore" href="/blog/posts/2021-09-13-csawquals21_ncore/">Read more ⟶</a>
+				</section>
+				
+				<section class="list-item">
+					<h1 class="title"><a href="/blog/posts/2020-02-15-nullcon20_dark_honya/">Dark Honya -- nullcon HackIM 2020</a></h1>
+					<time>Feb 9, 2020</time>
+					<br><div class="description">
+	
+	With Jorge and jofra
+Points: 460 (dynamic)
+TL;DR Null byte overflow on heap chunk Free overflown chunk Overwrite ptr array Write printf@plt on free@got to obtain a libc leak Write system on atoi@got to get a shell Binary Mitigations Arch: amd64-64-little RELRO: Partial RELRO Stack: No canary found NX: NX enabled PIE: No PIE (0x400000) Reversing The program provided three functionalities:
+1. Buy a book void buy() { char *chunk; signed int i; for ( i = 0; ptr[i]; ++i ) ; if ( i &lt;= 15 ) { chunk = malloc(0xF8); puts(&#34;Name of the book?&hellip;
+	
+</div>
+					<a class="readmore" href="/blog/posts/2020-02-15-nullcon20_dark_honya/">Read more ⟶</a>
+				</section>
+				
+				<section class="list-item">
+					<h1 class="title"><a href="/blog/posts/2019-12-03-heap_exploitation_lecture/">Heap Exploitation Lecture</a></h1>
+					<time>Dec 3, 2019</time>
+					<br><div class="description">
+	
+	Lecture with Jorge on Glibc&rsquo;s Heap basics and how to exploit it.
+We covered the following topics:
+Chunks and chunk implementation Coalescing Main arena and Bins Tcache Common attacks The lecture slides can be downloaded here&hellip;
+	
+</div>
+					<a class="readmore" href="/blog/posts/2019-12-03-heap_exploitation_lecture/">Read more ⟶</a>
+				</section>
+				
+				<section class="list-item">
+					<h1 class="title"><a href="/blog/posts/2019-11-29-software_security_coursework/">Software Security - Taint Analysis</a></h1>
+					<time>Nov 29, 2019</time>
+					<br><div class="description">
+	
+	Tools: Python
+source code
+This tool analyses python code slices and reports on illegal information flows by performing Taint Analysis, a form of Static Analysis. It was developed as a Software Security course project by me and Tchiclas
+The following code slice contains lines of code which may impact a data flow between a certain entry point and a sensitive sink. The variable request (which for intuition can be seen as the request parameter of a Django view), is uninstantiated, and can be understood as an entry point.&hellip;
+	
+</div>
+					<a class="readmore" href="/blog/posts/2019-11-29-software_security_coursework/">Read more ⟶</a>
+				</section>
+				
+				<section class="list-item">
+					<h1 class="title"><a href="/blog/posts/2019-11-10-pwn2win19_random_vault/">Random Vault -- Pwn2Win 2019 CTF</a></h1>
+					<time>Nov 10, 2019</time>
+					<br><div class="description">
+	
+	With Jorge
+Points: 303 (dynamic) Solves: 18
+TL;DR Only two Format String vulnerability allowed. Use first Format String to bypass PIE mitigation Use second Format String to: change srand() seed value change function pointer Built shellcode and get shell Reversing Binary Mitigations Arch: amd64-64-little RELRO: FULL RELRO STACK: Canary Found NX: NX enabled PIE: PIE enabled The binary functionality is pretty simple:
+1. Change username Let&rsquo;s you change the username once, will lead to printf(username).&hellip;
+	
+</div>
+					<a class="readmore" href="/blog/posts/2019-11-10-pwn2win19_random_vault/">Read more ⟶</a>
+				</section>
+				
+				<section class="list-item">
+					<h1 class="title"><a href="/blog/posts/2019-10-20-seccon19_lazy/">lazy -- SECCON 2019 Online CTF</a></h1>
+					<time>Oct 20, 2019</time>
+					<br><div class="description">
+	
+	Points: 332 (dynamic) Solves: 43
+TLDR Overflow to bypass login Exfiltrate all relevant files (challenge binary and libc) Format string to change the name of the file to be downloaded Format String to get leaks Buffer Overflow to build a ROP-chain and get a shell Recon and Reversing: In this challenge we are simply given the server host:port combination: lazy.chal.seccon.jp 33333
+Connecting to it with netcat, we get a menu with 3 options:&hellip;
+	
+</div>
+					<a class="readmore" href="/blog/posts/2019-10-20-seccon19_lazy/">Read more ⟶</a>
+				</section>
+				
+				<section class="list-item">
+					<h1 class="title"><a href="/blog/posts/2019-4-19-plaidctf19_splaid_birch/">SPlaid Birch -- Plaid CTF 2019</a></h1>
+					<time>Apr 19, 2019</time>
+					<br><div class="description">
+	
+	With jofra
+Points: 300 Solves: 41 Description:
+I make sure never to use
+scanf(&quot;%s&quot;)
+when doing competitive programming so that my solutions don&rsquo;t have buffer overflows. But writing algorithms is hard.
+Recon We are given an ELF 64-bit x86/64 stripped binary, a libc and an external library lisplaid.so.1. After reversing this library a bit, we realized that it is an implementation of Splay Trees.
+From wikipedia:
+A splay tree is a self-balancing binary search tree with the additional property that recently accessed elements are quick to access again.&hellip;
+	
+</div>
+					<a class="readmore" href="/blog/posts/2019-4-19-plaidctf19_splaid_birch/">Read more ⟶</a>
+				</section>
+				
+				<section class="list-item">
+					<h1 class="title"><a href="/blog/posts/2018-12-23-artificial_inteligence_coursework/">Artificial Intelligence Course Project</a></h1>
+					<time>Dec 23, 2018</time>
+					<br><div class="description">
+	
+	 Grade: 19/20
+Tools: Python
+Agent for solving Solitaire Puzzle Game given a board state Bayesian Network Module and Reinforcement Learning (Q-learning) implementation &hellip;
+	
+</div>
+					<a class="readmore" href="/blog/posts/2018-12-23-artificial_inteligence_coursework/">Read more ⟶</a>
+				</section>
+				
+				
+
+<ul class="pagination">
+	<span class="page-item page-prev">
+	
+	</span>
+	<span class="page-item page-next">
+	
+    <a href="/blog/page/2/" class="page-link" aria-label="Next"><span aria-hidden="true">Next →</span></a>
+	
+	</span>
+</ul>
+
+
+			</main>
+			<footer>
+  <div style="display:flex"><a class="soc" href="https://example.com" rel="me" title="GitHub"><i data-feather="github"></i></a>
+    <a class="border"></a><a class="soc" href="https://example.com" rel="me" title="Twitter"><i data-feather="twitter"></i></a>
+    <a class="border"></a><a class="soc" href="https://example.com" rel="me" title="BlueSky"><i data-feather="bluesky"></i></a>
+    <a class="border"></a></div>
+  <div class="footer-info">
+    2024  <a
+      href="https://github.com/athul/archie">Archie Theme</a> | Built with <a href="https://gohugo.io">Hugo</a>
+  </div>
+</footer>
+<script>
+  feather.replace()
+</script>
+		</div>
+		
+	</body>
+</html>

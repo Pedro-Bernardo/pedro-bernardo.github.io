@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html><head lang="en"><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+	<meta charset="utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge"><title>Heap Basics Lecture - 2022 - Pedro Bernardo</title><meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="description" content="The second rendition of the Glibc&rsquo;s Heap Basics and How to Exploit it* lecture.
+We covered the following topics:
+Chunks and chunk implementation Coalescing Main arena and Bins Tcache Common attacks Exploit development walkthrough Demo We solved gradebook from the K3RN3L CTF 2021 via a Tcache Poison attack (unintended solution). This solution walks through obtaining libc leaks and how to forge heap layouts favorable for using the Tcache Poison technique to obtain code execution." />
+	<meta property="og:image" content=""/>
+	<meta property="og:title" content="Heap Basics Lecture - 2022" />
+<meta property="og:description" content="The second rendition of the Glibc&rsquo;s Heap Basics and How to Exploit it* lecture.
+We covered the following topics:
+Chunks and chunk implementation Coalescing Main arena and Bins Tcache Common attacks Exploit development walkthrough Demo We solved gradebook from the K3RN3L CTF 2021 via a Tcache Poison attack (unintended solution). This solution walks through obtaining libc leaks and how to forge heap layouts favorable for using the Tcache Poison technique to obtain code execution." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="//localhost:1313/blog/posts/2022-01-19-heap_basics_2nd_edition/" /><meta property="article:section" content="blog" />
+<meta property="article:published_time" content="2022-01-19T00:00:00+00:00" />
+<meta property="article:modified_time" content="2022-01-19T00:00:00+00:00" />
+
+<meta name="twitter:card" content="summary"/><meta name="twitter:title" content="Heap Basics Lecture - 2022"/>
+<meta name="twitter:description" content="The second rendition of the Glibc&rsquo;s Heap Basics and How to Exploit it* lecture.
+We covered the following topics:
+Chunks and chunk implementation Coalescing Main arena and Bins Tcache Common attacks Exploit development walkthrough Demo We solved gradebook from the K3RN3L CTF 2021 via a Tcache Poison attack (unintended solution). This solution walks through obtaining libc leaks and how to forge heap layouts favorable for using the Tcache Poison technique to obtain code execution."/>
+<script src="//localhost:1313/js/feather.min.js"></script>
+	
+	
+        <link href="//localhost:1313/css/fonts.0db1b638c3c6b12e3f0bf5303b558492d936bf9102ec4c4ba2bdc315e2a4184f.css" rel="stylesheet">
+	
+
+	
+	<link rel="stylesheet" type="text/css" media="screen" href="//localhost:1313/css/main.5cebd7d4fb2b97856af8d32a6def16164fcf7d844e98e236fcb3559655020373.css" />
+		<link id="darkModeStyle" rel="stylesheet" type="text/css" href="//localhost:1313/css/dark.d22e2a2879d933a4b781535fc4c4c716e9f9d35ea4986dd0cbabda82effc4bdd.css"   />
+	
+
+	
+	
+		<script type="text/javascript"
+		src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+		</script>
+
+		
+		<script type="text/x-mathjax-config">
+		MathJax.Hub.Config({
+			tex2jax: {
+				inlineMath: [['$','$'], ['\\(','\\)']],
+				displayMath: [['$$','$$'], ['\[','\]']],
+				processEscapes: true,
+				processEnvironments: true,
+				skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+				TeX: { equationNumbers: { autoNumber: "AMS" },
+						 extensions: ["AMSmath.js", "AMSsymbols.js"] }
+			}
+		});
+		</script>
+	
+
+	
+	
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.css">
+		<script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.js"></script>
+		<script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body);"></script>
+
+		
+		<script>
+			document.addEventListener("DOMContentLoaded", function() {
+					renderMathInElement(document.body, {
+							delimiters: [
+									{left: "$$", right: "$$", display: true},
+									{left: "$", right: "$", display: false}
+							]
+					});
+			});
+			</script>
+	
+
+	
+</head>
+<body>
+        <div class="content"><header>
+	<div class="main">
+		<a href="//localhost:1313/">Pedro Bernardo</a>
+	</div>
+	<nav>
+		
+		<a href="/blog">Blog</a>
+		
+		<a href="/blog/posts">All posts</a>
+		
+		<a href="/tags">Tags</a>
+		
+		<a href="/">CV</a>
+		
+		
+	</nav>
+</header>
+
+<main>
+	<article>
+		<div class="title">
+			<h1 class="title">Heap Basics Lecture - 2022</h1>
+			<div class="meta">Posted on Jan 19, 2022</div>
+		</div>
+		
+
+		
+
+		<section class="body">
+			<p>The second rendition of the <a href="https://pedro-bernardo.github.io/posts/Heap_Exploitation_Lecture/">Glibc&rsquo;s Heap Basics and How to Exploit it</a>* lecture.</p>
+<p>We covered the following topics:</p>
+<ul>
+<li>Chunks and chunk implementation</li>
+<li>Coalescing</li>
+<li>Main arena and Bins</li>
+<li>Tcache</li>
+<li>Common attacks</li>
+<li>Exploit development walkthrough</li>
+</ul>
+<h2 id="demo">Demo</h2>
+<p>We solved <em>gradebook</em> from the <a href="https://ctf.k3rn3l4rmy.com/Challenges">K3RN3L CTF 2021</a> via a Tcache Poison attack (unintended solution). This solution walks through obtaining libc leaks and how to forge heap layouts favorable for using the Tcache Poison technique to obtain code execution.</p>
+<p>Download the binary and libc here: <a href="https://ctf.k3rn3l4rmy.com/kernelctf-distribution-challs/gradebook/gradebook">gradebook</a>, <a href="https://ctf.k3rn3l4rmy.com/kernelctf-distribution-challs/gradebook/libc.so.6">libc.so.6</a></p>
+<h3 id="solution-summary">Solution Summary</h3>
+<ol>
+<li>Allocate a large chunk (0x1000 bytes)</li>
+<li>Allocate a padding chunk so the previous large chunk isn&rsquo;t merged with the wilderness</li>
+<li>Free all chunks</li>
+<li>Allocate a large chunk (will re-use the last large chunk) and overwrite the first 8 bytes only</li>
+<li>Leak backward pointer through the binary&rsquo;s <code>list</code> functionality</li>
+<li>Create students and names of different sizes to get a Tcache entry immediately after our large chunk</li>
+<li>Use the overflow bug in the binary to poison the tcache</li>
+<li>Allocate a chunk in the <code>__free_hook</code> and assign it to <code>system</code></li>
+<li>Free a chunk containing the string <code>/bin/sh\x00</code></li>
+<li>Win</li>
+</ol>
+<p>Exploit script: [exploit.py]({{ &ldquo;/assets/code/heap_basics/exploit-reference.py&rdquo; | relative_url }})</p>
+<h2 id="references">References</h2>
+<ul>
+<li><a href="https://heap-exploitation.dhavalkapil.com/diving_into_glibc_heap/security_checks">Malloc security checks</a></li>
+<li><a href="https://www.sourceware.org/glibc/wiki/MallocInternals">Malloc internals</a></li>
+<li><a href="https://github.com/shellphish/how2heap">How2heap</a></li>
+<li><a href="https://elixir.bootlin.com/glibc/latest/source">Glibc source code</a></li>
+<li><a href="https://www.youtube.com/playlist?list=PLiCcguURxSpbD9M0ha-Mvs-vLYt-VKlWt">Temple of PWN</a></li>
+<li><a href="https://www.youtube.com/playlist?list=PLhixgUqwRTjxglIswKp9mpkfPNfHkzyeN">LiveOverflow</a></li>
+<li><a href="https://github.com/hugsy/gef">GEF gdb extension</a></li>
+</ul>
+<p>Lecture Slides: [Heap_Basics.pdf]({{ &ldquo;/assets/pdf/PWN_Heap_Basics2.pdf&rdquo; | relative_url }})</p>
+
+		</section>
+
+		<div class="post-tags">
+			
+			
+			<nav class="nav tags">
+				<ul class="tags">
+					
+					<li><a href="/tags/pwn">pwn</a></li>
+					
+					<li><a href="/tags/heap">heap</a></li>
+					
+				</ul>
+			</nav>
+			
+			
+		</div>
+		</article>
+</main>
+<footer>
+  <div style="display:flex"><a class="soc" href="https://example.com" rel="me" title="GitHub"><i data-feather="github"></i></a>
+    <a class="border"></a><a class="soc" href="https://example.com" rel="me" title="Twitter"><i data-feather="twitter"></i></a>
+    <a class="border"></a><a class="soc" href="https://example.com" rel="me" title="BlueSky"><i data-feather="bluesky"></i></a>
+    <a class="border"></a></div>
+  <div class="footer-info">
+    2024  <a
+      href="https://github.com/athul/archie">Archie Theme</a> | Built with <a href="https://gohugo.io">Hugo</a>
+  </div>
+</footer>
+<script>
+  feather.replace()
+</script></div>
+    </body>
+</html>

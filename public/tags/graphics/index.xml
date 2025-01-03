@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Graphics on Pedro Bernardo</title>
+    <link>//localhost:1313/tags/graphics/</link>
+    <description>Recent content in Graphics on Pedro Bernardo</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Thu, 08 Nov 2018 00:00:00 +0000</lastBuildDate>
+    <atom:link href="//localhost:1313/tags/graphics/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Computer Graphics</title>
+      <link>//localhost:1313/blog/posts/2018-11-08-computer_graphics/</link>
+      <pubDate>Thu, 08 Nov 2018 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/blog/posts/2018-11-08-computer_graphics/</guid>
+      <description> Grade: 19.9/20&#xA;Tools: HTML5, Javascript, Three.js&#xA;A series of computer graphics demos written in Three.js.&#xA;Interactive Animation and basic 3D Object Modulation iPerspective Cameras, Autonomous Movement and Collision Detection Materials and different Light Sources Textures, Point Light, Pause and Restart </description>
+    </item>
+  </channel>
+</rss>

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Taint Analysis on Pedro Bernardo</title>
+    <link>//localhost:1313/tags/taint-analysis/</link>
+    <description>Recent content in Taint Analysis on Pedro Bernardo</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Fri, 29 Nov 2019 00:00:00 +0000</lastBuildDate>
+    <atom:link href="//localhost:1313/tags/taint-analysis/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Software Security - Taint Analysis</title>
+      <link>//localhost:1313/blog/posts/2019-11-29-software_security_coursework/</link>
+      <pubDate>Fri, 29 Nov 2019 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/blog/posts/2019-11-29-software_security_coursework/</guid>
+      <description>Tools: Python&#xA;source code&#xA;This tool analyses python code slices and reports on illegal information flows by performing Taint Analysis, a form of Static Analysis. It was developed as a Software Security course project by me and Tchiclas&#xA;The following code slice contains lines of code which may impact a data flow between a certain entry point and a sensitive sink. The variable request (which for intuition can be seen as the request parameter of a Django view), is uninstantiated, and can be understood as an entry point.</description>
+    </item>
+  </channel>
+</rss>

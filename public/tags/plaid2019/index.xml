@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Plaid2019 on Pedro Bernardo</title>
+    <link>//localhost:1313/tags/plaid2019/</link>
+    <description>Recent content in Plaid2019 on Pedro Bernardo</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Fri, 19 Apr 2019 00:00:00 +0000</lastBuildDate>
+    <atom:link href="//localhost:1313/tags/plaid2019/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>SPlaid Birch -- Plaid CTF 2019</title>
+      <link>//localhost:1313/blog/posts/2019-4-19-plaidctf19_splaid_birch/</link>
+      <pubDate>Fri, 19 Apr 2019 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/blog/posts/2019-4-19-plaidctf19_splaid_birch/</guid>
+      <description>With jofra&#xA;Points: 300 Solves: 41 Description:&#xA;I make sure never to use&#xA;scanf(&amp;quot;%s&amp;quot;)&#xA;when doing competitive programming so that my solutions don&amp;rsquo;t have buffer overflows. But writing algorithms is hard.&#xA;Recon We are given an ELF 64-bit x86/64 stripped binary, a libc and an external library lisplaid.so.1. After reversing this library a bit, we realized that it is an implementation of Splay Trees.&#xA;From wikipedia:&#xA;A splay tree is a self-balancing binary search tree with the additional property that recently accessed elements are quick to access again.</description>
+    </item>
+  </channel>
+</rss>

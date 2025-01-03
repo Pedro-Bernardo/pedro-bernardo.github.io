@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Rev on Pedro Bernardo</title>
+    <link>//localhost:1313/tags/rev/</link>
+    <description>Recent content in Rev on Pedro Bernardo</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Mon, 13 Sep 2021 00:00:00 +0000</lastBuildDate>
+    <atom:link href="//localhost:1313/tags/rev/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>ncore -- CSAW Quals 2021</title>
+      <link>//localhost:1313/blog/posts/2021-09-13-csawquals21_ncore/</link>
+      <pubDate>Mon, 13 Sep 2021 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/blog/posts/2021-09-13-csawquals21_ncore/</guid>
+      <description>Points: 484 (dynamic)&#xA;Solves: 53&#xA;Description:&#xA;We have a very safe core with a very safe enclave&#xA;Problem: Server We are given a server.py file that is running on the server that reads user input and stores it in a ram.hex file. The server then uses vvp (Icarus Verilog vvp runtime engine) to run a compiled SystemVerilog file called nco.&#xA;For debugging, you can install the iverilog compiler, which compiles SystemVerilog source files to vvp assembly, which can then be executed by vvp.</description>
+    </item>
+  </channel>
+</rss>

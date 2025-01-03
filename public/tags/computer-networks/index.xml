@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Computer Networks on Pedro Bernardo</title>
+    <link>//localhost:1313/tags/computer-networks/</link>
+    <description>Recent content in Computer Networks on Pedro Bernardo</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Sun, 23 Dec 2018 00:00:00 +0000</lastBuildDate>
+    <atom:link href="//localhost:1313/tags/computer-networks/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Computer Networks</title>
+      <link>//localhost:1313/blog/posts/2018-12-10-computer_networks/</link>
+      <pubDate>Sun, 23 Dec 2018 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/blog/posts/2018-12-10-computer_networks/</guid>
+      <description>Grade: 17/20&#xA;Tools: C++ source code&#xA;File Backup Application, with Client App, Control Server and Backup Server programs.</description>
+    </item>
+  </channel>
+</rss>
