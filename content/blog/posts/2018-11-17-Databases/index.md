@@ -1,8 +1,8 @@
 ---
-title: Databases
-categories: [Course Work]
+title: Databases Course Work
 tags: [databases]
 date: 2018-11-17
+description: ""
 ---
 
 > **Grade:** 17.2/20  

@@ -1,8 +1,8 @@
 ---
-title: Artificial Intelligence Course Project
-categories: [Course Work]
-tags: [AI]
+title: Artificial Intelligence Course Work
+tags: [ai]
 date: 2018-12-23
+description: ""
 ---
 
 > **Grade:** 19/20  

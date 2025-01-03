@@ -1,8 +1,9 @@
 ---
-title: Random Vault -- Pwn2Win 2019 CTF
-categories: [CTF Writeups]
-tags: [pwn2win, pwn]
+title: Random Vault  
+ctf: Pwn2Win 2019 CTF
+tags: [pwn2win, pwn, shellcode, srand, writeup]
 date: 2019-11-10
+description: "The program 2-shot format string: 1) bypass PIE; 2) modify srand seed and function pointer. The new seed lets us control the RIP so we can land on our shellcode."
 ---
 
 With [Jorge](https://twitter.com/jorge_cmartins)

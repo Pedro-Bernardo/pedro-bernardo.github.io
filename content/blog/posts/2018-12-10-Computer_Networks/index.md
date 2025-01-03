@@ -1,8 +1,8 @@
 ---
-title: Computer Networks
-categories: [Course Work]
+title: Computer Networks Course Work
 tags: [computer networks]
 date: 2018-12-23
+description: ""
 ---
 
 > **Grade:** 17/20  

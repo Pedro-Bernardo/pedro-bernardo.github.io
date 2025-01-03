@@ -1,8 +1,8 @@
 ---
-title: Heap Basics Lecture - 2022
-categories: [Lectures]
+title: Heap Basics Lecture 
 tags: [pwn, heap]
 date: 2022-01-19
+description: ""
 ---
 
 The second rendition of the [Glibc's Heap Basics and How to Exploit it](https://pedro-bernardo.github.io/posts/Heap_Exploitation_Lecture/)* lecture.
@@ -46,4 +46,5 @@ Exploit script: [exploit.py]({{ "/assets/code/heap_basics/exploit-reference.py" 
 - [LiveOverflow](https://www.youtube.com/playlist?list=PLhixgUqwRTjxglIswKp9mpkfPNfHkzyeN)
 - [GEF gdb extension](https://github.com/hugsy/gef)
 
-Lecture Slides: [Heap_Basics.pdf]({{ "/assets/pdf/PWN_Heap_Basics2.pdf" | relative_url }})
+<!-- Lecture Slides: [Heap_Basics.pdf]({{ "/assets/pdf/PWN_Heap_Basics2.pdf" | relative_url }}) -->
+[Lecture slides](PWN_Heap_Basics2.pdf)   

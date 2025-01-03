@@ -1,10 +1,11 @@
 ---
-title: Dark Honya -- nullcon HackIM 2020
-categories: [CTF Writeups]
-tags: [nullcon20, pwn]
+title: Dark Honya 
+ctf: "nullcon HackIM 2020"
+tags: [nullcon20, pwn, writeup]
 date: 2020-02-09
 seo:
-  date_modified: 2020-02-16 19:50:45 +0000
+date_modified: 2020-02-16 19:50:45 +0000
+description: "Null byte overflow on a heap chunk, which enables a use-after-free. Use unsafe-unlink to get a libc leak and a shell."
 ---
 With [Jorge](https://twitter.com/jorge_cmartins) and [jofra](https://twitter.com/V_jofra)
 

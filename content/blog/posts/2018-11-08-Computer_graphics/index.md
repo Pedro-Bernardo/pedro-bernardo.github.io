@@ -1,8 +1,8 @@
 ---
-title: Computer Graphics
-categories: [Course Work]
+title: Computer Graphics Course Work
 tags: [graphics]
 date: 2018-11-08
+description: ""
 ---
 
 > **Grade:** 19.9/20  

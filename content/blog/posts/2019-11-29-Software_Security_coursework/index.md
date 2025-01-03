@@ -1,8 +1,8 @@
 ---
-title: Software Security - Taint Analysis
-categories: [Course Work]
+title: Software Security Course Work - Taint Analysis
 tags: [taint analysis]
 date: 2019-11-29
+description: ""
 ---
 
 > **Tools:** Python  

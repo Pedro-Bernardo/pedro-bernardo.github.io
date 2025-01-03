@@ -1,8 +1,9 @@
 ---
-title: SPlaid Birch -- Plaid CTF 2019
-categories: [CTF Writeups]
-tags: ["plaid2019", "pwn"]
+title: SPlaid Birch
+ctf: Plaid CTF 2019
+tags: [plaid2019, pwn, heap, tcache, writeup]
 date: 2019-04-19
+description: "Out-of-bounds read (OOBR) allows ASLR leaks and double free. We use the OOBR to mount a Tcache poison attack and eploit the __free_hook pointer to get a shell."
 ---
 With [jofra](https://twitter.com/V_jofra)
 

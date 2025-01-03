@@ -1,8 +1,9 @@
 ---
-title: shell->code -- CSAW2018 Quals
-categories: [CTF Writeups]
-tags: [csaw18, pwn]
+title: shell->code 
+ctf: "CSAW2018 Quals"
+tags: [csaw18, pwn, shellcode, writeup]
 date: 2018-09-20
+description: "Buffer overflow into a multi-stage shellcode. First flag for STT <3"
 ---
 **Points:** 100
 

@@ -1,8 +1,9 @@
 ---
-title: lazy -- SECCON 2019 Online CTF
-categories: [CTF Writeups]
-tags: [pwn]
+title: lazy 
+ctf: "SECCON 2019 Online CTF"
+tags: [seccon19, pwn, writeup, formatstring]
 date: 2019-10-20
+description: "Exploit a buffer overflow to bypass a login check, into a format string vulnerability to dump the binary and libc. Exploit another buffer overflow into a ROP-chain to get a shell."
 ---
 
 **Points:** 332 (dynamic)

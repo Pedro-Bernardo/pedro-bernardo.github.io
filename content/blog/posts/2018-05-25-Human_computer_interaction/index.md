@@ -1,8 +1,9 @@
 ---
 title: Human Computer Interaction
-categories: [Course Work]
+category: "Course Work"
 tags: [interfaces]
 date: 2018-05-25
+description: "Smartwatch interface prototype for a music festival accessory."
 ---
 
 > **Grade:** 18.93/20  

@@ -1,5 +1,4 @@
 ---
-type: "blog"
-layout: "home"
+layout: "list"
 ---
 

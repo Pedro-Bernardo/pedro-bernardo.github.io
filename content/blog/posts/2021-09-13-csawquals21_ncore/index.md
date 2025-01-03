@@ -1,9 +1,10 @@
 ---
-title: ncore -- CSAW Quals 2021
-tags: ["csawquals21", "rev"]
+title: ncore 
+ctf: "CSAW Quals 2021"
+tags: ["csawquals21", "rev", "verilog", "writeup"]
 date: 2021-09-13
 authors: ["pedro-bernardo"]
-categories: [CTF Writeups]
+description: "Reverse engineer a Verilog VM and bruteforce an authentication key."
 ---
 
 **Points:** 484 (dynamic)  

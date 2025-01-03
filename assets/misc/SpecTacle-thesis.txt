@@ -1,0 +1,10 @@
+@masterthesis{Bernardo21,
+    title        = {SpecTacle - A Platform-agnostic Analysis Tool for Detecting Spectre-PHT Gadgets in Binaries},
+    author       = {Pedro Bernardo},
+    year         = 2021,
+    month        = {November},
+    address      = {Lisbon, Portugal},
+    note         = {Available at \url{https://fenix.tecnico.ulisboa.pt/downloadFile/563345090419647/86500-Pedro-Bernardo-dissertacao.pdf}},
+    school       = {Instituto Superior TÃ©cnico , University of Lisbon},
+    type         = {Master's thesis}
+}

@@ -1,10 +1,10 @@
 ---
-title: "hfs_browser -- Midnight Sun CTF 2022 Quals"
+title: "hfs_browser"
+ctf: "Midnight Sun CTF 2022 Quals"
 tags: ["midnightsunquals22", "pwn", "javascript", "writeup"]
 date: 2022-04-03
 authors: ["pedro-bernardo"]
-categories: [CTF Writeups]
-description: "Exploiting a User-After-Free vulnerability in a JavaScript interpreter to get arbitrary code execution!"
+description: "Exploiting a Use-After-Free vulnerability in a JavaScript engine to get a libc leak and mount a Tcache poison attack to get RCE. All of it through JavaScript :D"
 ---
 
 <!-- # hfs_browser -- Midnight Sun CTF 2022 Quals -->
@@ -252,7 +252,6 @@ target[1] = system_upper;   // higher 32 bits of system
 chunk2.midnight() // free the chunk, calling `system("cat *la*")`
 ```
 
-<!-- ![upload-image]({{ "/assets/img/midnightQuals22/hfs_browser_flag.png" | relative_url }}) -->
 ![alt](hfs_browser_flag.png)   
 
 Running on the server got us the flag: `midnight{c4nt_h4v3_Us3_4ft3r_fr33s_1f_yoU_d0nt_fr33}`
