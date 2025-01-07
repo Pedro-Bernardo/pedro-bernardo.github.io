@@ -189,7 +189,7 @@ libc_base = libc_leak - 0x1ed350;
 ## Tcache Poison
 Many operations influence the heap layout and the bins. Using functions like `console.log` affected both our leaks, and other operations affected our ability to properly write to the freed chunks.
 
-After a lot of tweaking, we developed working exploit ([pwn.js]({{ "/assets/code/midnightQuals22/hfs_browser/pwn.js" | relative_url }})) with the following steps:
+After a lot of tweaking, we developed working exploit ([pwn.js](pwn.js)) with the following steps:
 
 #### 1. Allocate a chunk of size 0x1e0 (we chose 0x1e0 since the Tcache for this size was already populated, preventing problems with the chunk counter)
 

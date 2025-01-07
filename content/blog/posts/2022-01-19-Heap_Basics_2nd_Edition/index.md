@@ -34,7 +34,7 @@ Download the binary and libc here: [gradebook](https://ctf.k3rn3l4rmy.com/kernel
 9. Free a chunk containing the string `/bin/sh\x00`
 10. Win
 
-Exploit script: [exploit.py]({{ "/assets/code/heap_basics/exploit-reference.py" | relative_url }})
+Exploit script: [exploit.py](exploit-reference.py)
 
 ## References
 
@@ -46,5 +46,4 @@ Exploit script: [exploit.py]({{ "/assets/code/heap_basics/exploit-reference.py" 
 - [LiveOverflow](https://www.youtube.com/playlist?list=PLhixgUqwRTjxglIswKp9mpkfPNfHkzyeN)
 - [GEF gdb extension](https://github.com/hugsy/gef)
 
-<!-- Lecture Slides: [Heap_Basics.pdf]({{ "/assets/pdf/PWN_Heap_Basics2.pdf" | relative_url }}) -->
 [Lecture slides](PWN_Heap_Basics2.pdf)   

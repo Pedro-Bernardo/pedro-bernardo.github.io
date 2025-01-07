@@ -225,5 +225,5 @@ ENT
 
 From which we can decode the flag: `flag{d0nT_mESs_wiTh_tHe_sChLAmi}`
 
-The full solution can be found in [solve.py]({{ "/assets/code/csawquals21/ncore/solve.py" | relative_url }}).
+The full solution can be found in [solve.py](solve.py).
 
