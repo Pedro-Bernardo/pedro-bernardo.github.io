@@ -7,7 +7,6 @@ authors: ["pedro-bernardo"]
 description: "Exploiting a Use-After-Free vulnerability in a JavaScript engine to get a libc leak and mount a Tcache poison attack to get RCE. All of it through JavaScript :D"
 ---
 
-<!-- # hfs_browser -- Midnight Sun CTF 2022 Quals -->
 
 Solved with [@jorge](https://twitter.com/jorge_cmartins) and [@s3np41k1r1t0](https://twitter.com/s3np41k1r1t0)
 ar
@@ -15,9 +14,6 @@ ar
 
 **Solves:** 20
 
-<!-- **Description:** -->
-
-<!-- > We have a very safe core with a very safe enclave -->
 
 # TL;DR
 1. Find a UAF in the `midnight()` method for JS typed arrays
