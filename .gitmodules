@@ -1,3 +1,4 @@
 [submodule "themes/archie"]
 	path = themes/archie
 	url = git@github.com:Pedro-Bernardo/archie.git
+	branch = master
